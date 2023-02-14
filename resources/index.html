@@ -24,30 +24,30 @@
         <button style="float: inherit; width: 100px;" tabindex="-1" onmousedown="document.getElementById('chartInput').click()">Browse chart</button><br>
         <button style="float: inherit; width: 100px;" tabindex="-1" onmousedown="saveChart()">Save chart</button><br>
 
-        <input tabindex="-1" type="text" id="setBpm" size="10" style="float: inherit; text-align: center;" value="180"><br>
+        <input tabindex="-1" type="text" id="setBpm" size="10" value="180"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setBpm()">Set BPM</button><br>
         
-        <input tabindex="-1" type="text" id="setOffset" size="10" style="float: inherit; text-align: center;" value="0"><br>
+        <input tabindex="-1" type="text" id="setOffset" size="10" value="0"><br>
         <button tabindex="-1" style="z-index: inherit; float: inherit; width: 100px;" onmousedown="setOffset()">Set ms offset</button><br>
         
-        <input tabindex="-1" type="text" id="setSnapping" size="10" style="float: inherit; text-align: center;" value="4"><br>
+        <input tabindex="-1" type="text" id="setSnapping" size="10" value="4"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSnapping()">Set snapping</button><br>
         
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="toggleMetadataMenu()">Metadata settings</button><br>
         <div id="metadataSettings" style="display: none;">
-          <input tabindex="-1" type="text" id="setSongName" size="10" style="float: inherit; text-align: center;" value="Song Name"><br>
+          <input tabindex="-1" type="text" id="setSongName" size="10" value="Song Name"><br>
           <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSongName()">Set song name</button><br>
 
-          <input tabindex="-1" type="text" id="setSongArtist" size="10" style="float: inherit; text-align: center;" value="Artist"><br>
+          <input tabindex="-1" type="text" id="setSongArtist" size="10" value="Artist"><br>
           <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSongArtist()">Set song artist</button><br>
 
-          <input tabindex="-1" type="text" id="setGenre" size="10" style="float: inherit; text-align: center;" value="Genre"><br>
+          <input tabindex="-1" type="text" id="setGenre" size="10" value="Genre"><br>
           <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setGenre()">Set genre</button><br>
 
-          <input tabindex="-1" type="text" id="setScale" size="10" style="float: inherit; text-align: center;" value="1"><br>
+          <input tabindex="-1" type="text" id="setScale" size="10" value="1"><br>
           <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setScale()">Set scale</button><br>
 
-          <input tabindex="-1" type="text" id="setCharter" size="10" style="float: inherit; text-align: center;" value="Charter"><br>
+          <input tabindex="-1" type="text" id="setCharter" size="10" value="Charter"><br>
           <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setCharter()">Set charter name</button><br>
   
         </div>
@@ -55,17 +55,13 @@
       </div>
       <div style="float: right;">
         <button tabindex="-1" style="float: right; width: 100px;" onmousedown="copyTime()">Copy time to clipboard</button><br>
-        <input tabindex="-1" type="text" id="setAnchor" size="10" style="float: inherit; text-align: center;" value="0"><br>
+        <input tabindex="-1" type="text" id="setAnchor" size="10" value="0"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setAnchor()">Set anchor</button><br>
         
-        <!-- <label for="selectedNoteID" style="float: inherit; color: white;">selected note ID:</label><br>
-        <input tabindex="-1" type="text" id="selectedNoteID" size="10" style="float: inherit; text-align: center;"><br>
-        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="jumpToSelectedNote()">Jump to ID</button><br> -->
-        
-        <input tabindex="-1" type="text" id="setScrollSpeed" size="10" style="float: inherit; text-align: center;" value="400"><br>
+        <input tabindex="-1" type="text" id="setScrollSpeed" size="10" value="400"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setScrollSpeed()">Set scroll speed</button><br>
         
-        <input tabindex="-1" type="text" id="setMwheelSpeed" size="10" style="float: inherit; text-align: center;" value="1"><br>
+        <input tabindex="-1" type="text" id="setMwheelSpeed" size="10" value="1"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setMwheelSpeed()">Set mwheel speed</button><br>
         
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="makeLongNote()">Make long note</button><br>
@@ -83,11 +79,11 @@
         <br>  
         
         <div id="eSettings" style="float: inherit;">
-        <input tabindex="-1" type="text" id="setEffectDuration" size="10" style="float: inherit; text-align: center;" value="1"><br>
+        <input tabindex="-1" type="text" id="setEffectDuration" size="10" value="1"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectDuration()">Set duration (this×snapping)</button><br>
         
-        <input tabindex="-1" type="text" id="setEffectOpacity1" size="10" style="float: inherit; text-align: center;" value="0"><br>
-        <input tabindex="-1" type="text" id="setEffectOpacity2" size="10" style="float: inherit; text-align: center;" value="1"><br>
+        <input tabindex="-1" type="text" id="setEffectOpacity1" size="10" value="0"><br>
+        <input tabindex="-1" type="text" id="setEffectOpacity2" size="10" value="1"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectOpacity()">Set opacity</button><br>
 
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="renderEffects()">Apply effect</button><br>
