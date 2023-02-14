@@ -38,10 +38,6 @@
         <input tabindex="-1" type="text" id="setAnchor" size="10" style="float: inherit; text-align: center;" value="0"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setAnchor()">Set anchor</button><br>
         
-        <!-- <label for="selectedNoteID" style="float: inherit; color: white;">selected note ID:</label><br>
-        <input tabindex="-1" type="text" id="selectedNoteID" size="10" style="float: inherit; text-align: center;"><br>
-        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="jumpToSelectedNote()">Jump to ID</button><br> -->
-        
         <input tabindex="-1" type="text" id="setScrollSpeed" size="10" style="float: inherit; text-align: center;" value="400"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setScrollSpeed()">Set scroll speed</button><br>
         
@@ -80,6 +76,7 @@
     
     
     <!--THE GRID-->
+    <canvas id="canvas" onmousedown="checkClick(event)"></canvas>
     <div class="grid">
       <table>
         <tbody id="table">
@@ -107,7 +104,6 @@
         </tbody>
       </table>
     </div>
-    <canvas id="canvas" onmousedown="checkClick(event)"></canvas>
 
 
     <!-- Neutralino.js client. This file is gitignored, 
