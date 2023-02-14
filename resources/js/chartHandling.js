@@ -153,6 +153,30 @@ function loadChartEffects(inputEffects){
     }
 }
 
+//METADATA MENU ##########################################################
+
+function setSongName(){
+    chartMetadata.songName = document.getElementById("setSongName").value;
+}
+
+function setSongArtist(){
+    chartMetadata.artist = document.getElementById("setSongArtist").value;
+}
+
+function setGenre(){
+    chartMetadata.genre = document.getElementById("setGenre").value;
+}
+
+function setScale(){
+    chartMetadata.scale = document.getElementById("setScale").value;
+}
+
+function setCharter(){
+    chartMetadata.charter = document.getElementById("setCharter").value;
+}
+
+//########################################################################
+
 async function saveChart(){
     var path;
     var check = false;

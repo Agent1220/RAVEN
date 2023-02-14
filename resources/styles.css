@@ -52,6 +52,11 @@ html, body {
   z-index: -100;
 }
 
+input{
+  float: inherit; 
+  text-align: center;
+}
+
 canvas{
   /*border: 5px solid white;*/
   z-index: 10;

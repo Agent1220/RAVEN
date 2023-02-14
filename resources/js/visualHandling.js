@@ -1,14 +1,9 @@
-var scrollSpeed = 400;
-
-var idSelectorField = document.getElementById("selectedNgridPositionsoteID");
-var topControlsElement = document.getElementById("topControls");
 
 var animationId;
 
 var cId = 0; //note count
 var flyingNotes = [];
 var selectedNotes = []; //stores note ids 0
-//var longNoteConnections = []; //stores indexes of flyingNotes [][0,1,2...] legacy
 
 var eId = 0; //effect count
 var flyingEffects = [];
@@ -18,17 +13,20 @@ var curEDur = 1;
 var opacity1 = 0;
 var opacity2 = 1;
 
+var scrollSpeed = 400;
+
 const LNOffset = {"head":{"x":8,"y":128},
-                "tail":{"x":128,"y":8}};
+                  "tail":{"x":128,"y":8}};
 var noteOffset = {"x":0,"y":-19.75};
 var visOffset = {"x":4, "y":-37};
 var checkOffset = {"vertical":{"x":4,"y":118},
                    "horizontal":{"x":96,"y":20}};
-
+                   
 var gridPositions = [];
 var effectImages = [{"v":"doc", "h":"doc"}];
 var explosions = [];
-
+                   
+var topControlsElement = document.getElementById("topControls");
 var dirC = document.getElementById("dirChanger");
 var eDirC = document.getElementById("eDir");
 var eDirV = document.getElementById("eDirV");
