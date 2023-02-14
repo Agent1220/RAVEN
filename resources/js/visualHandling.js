@@ -117,9 +117,10 @@ function toggleMetadataMenu(){
     //metaDiv.style.display = setTo;
 }
 
-function checkClick(event, cell){
+function checkClick(event){
     const coords = getMousePos(event);
-    //console.log("mouse:",coords);
+    const correctedCoords = {"x":coords.x + noteOffset.x,"y":coords.y + noteOffset.y};
+    let cell;
     
     let noteclick = false;
     let note;
@@ -174,6 +175,17 @@ function checkClick(event, cell){
                 }
             }
             i++;
+        }
+    } else {
+        let i = 3;
+        while (i-- && !cell){
+            let j = 5;
+            while (j-- && !cell){
+                if (gridPositions[i][j].x <= correctedCoords.x && correctedCoords.x <= gridPositions[i][j].x + 256
+                 && gridPositions[i][j].y <= correctedCoords.y && correctedCoords.y <= gridPositions[i][j].y + 256){
+                    cell = `${i}${j}`;
+                }
+            }
         }
     }
 
@@ -375,7 +387,7 @@ function drawNote(note){
             break;
         case 3:
             x = note.target.x - (timeUntilLand * scrollSpeed); 
-            if (-256 <= x && x <= canvas.width   + 256){
+            if (-256 <= x && x <= canvas.width/2   + 256){
                     if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
@@ -421,7 +433,7 @@ function drawNote(note){
             break;
         case 7:
             x = note.target.x + (timeUntilLand * scrollSpeed); 
-            if (-256 <= x && x <= canvas.width   + 256){
+            if (-256 <= x && x <= canvas.width/2   + 256){
                     if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;

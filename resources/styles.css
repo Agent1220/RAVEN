@@ -60,7 +60,7 @@ input{
 canvas{
   /*border: 5px solid white;*/
   z-index: 10;
-  pointer-events: none;
+  /* pointer-events: none; */
   position: fixed;
   left: 0;
   background-color: transparent;
@@ -77,12 +77,15 @@ table {
   top: 50%;
   left: 50%;
   transform: translate(-50%,-50%);
+
+  pointer-events: none;
 }
 
 
 tr {
   margin-left: 0;
   margin-right: 0;
+  pointer-events: none;
 }
 
 p {
@@ -96,4 +99,9 @@ td {
   margin-right: 0;
   padding-left: 2.5px;
   padding-right: 2.5px;
+  pointer-events: none;
+}
+
+td img{
+  pointer-events: none;
 }
