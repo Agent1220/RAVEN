@@ -32,6 +32,26 @@
         
         <input tabindex="-1" type="text" id="setSnapping" size="10" style="float: inherit; text-align: center;" value="4"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSnapping()">Set snapping</button><br>
+        
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="toggleMetadataMenu()">Metadata settings</button><br>
+        <div id="metadataSettings" style="display: none;">
+          <input tabindex="-1" type="text" id="setSongName" size="10" style="float: inherit; text-align: center;" value="Song Name"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSongName()">Set song name</button><br>
+
+          <input tabindex="-1" type="text" id="setSongArtist" size="10" style="float: inherit; text-align: center;" value="Artist"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSongArtist()">Set song artist</button><br>
+
+          <input tabindex="-1" type="text" id="setGenre" size="10" style="float: inherit; text-align: center;" value="Genre"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setGenre()">Set genre</button><br>
+
+          <input tabindex="-1" type="text" id="setScale" size="10" style="float: inherit; text-align: center;" value="1"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setScale()">Set scale</button><br>
+
+          <input tabindex="-1" type="text" id="setCharter" size="10" style="float: inherit; text-align: center;" value="Charter"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setCharter()">Set charter name</button><br>
+  
+        </div>
+
       </div>
       <div style="float: right;">
         <button tabindex="-1" style="float: right; width: 100px;" onmousedown="copyTime()">Copy time to clipboard</button><br>
