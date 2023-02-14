@@ -1,0 +1,94 @@
+/*--ids--*/
+
+#progressBar {
+  width: 0%;
+  height: 100%;
+  background-color: rgba(0, 0, 255, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+}
+
+
+/*--classes--*/
+.note-container{
+  position: fixed;
+}
+
+.progress-bar-background {
+    width: 100%;
+    height: 20px;
+    background-color: darkgray;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    z-index: 100;
+  }
+
+.grid{
+  /* box-sizing:content-box; */
+  /* position: absolute; */
+  /* left: 15.039%; */
+  /* margin-left: 0px;
+  margin-left: -7.52%; */
+  /* bottom: 1%; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*--elements--*/
+
+html, body {
+  background-color: #222;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: -100;
+}
+
+canvas{
+  /*border: 5px solid white;*/
+  z-index: 10;
+  pointer-events: none;
+  position: fixed;
+  left: 0;
+  background-color: transparent;
+  /* opacity: 0.5625; */
+}
+
+
+table {
+  position: absolute;
+  margin: auto;
+  border-spacing: 0;
+  border: 0;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+
+tr {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+p {
+  margin: 0;
+  color: white;
+}
+
+td {
+  position: relative;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 2.5px;
+  padding-right: 2.5px;
+}

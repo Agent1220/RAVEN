@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body id="body" onwheel="seekAudio(event)">
+    <script>
+      document.getElementById("body").style.display = "none";
+    </script>
+    <!--TOP CONTROLS-->
+    <div class="progress-bar-background" id="progBarParent" onclick="seekAudio(event)">
+      <div id="progressBar"></div>
+      <p style="position: absolute; left:45%; right: 45%; margin: 0; text-align: center; pointer-events: none;" id="timeText">0:00 / 0:00</p>
+    </div>
+    <div style="display: none; overflow: hidden;">
+      <input tabindex="-1" type="file" id="audioInput" accept="audio/wav, audio/mpeg"/>
+      <input tabindex="-1" type="file" id="chartInput" accept=".json"/>
+      <!-- <input tabindex="-1" type="file" id="saveChart" accept=".json"/> -->
+    </div>
+    <div id="topControls" style="position: relative; z-index: 100;">
+      <div style="float: left;">
+        <button style="float: inherit; width: 100px;" tabindex="-1" onmousedown="document.getElementById('audioInput').click()">Browse audio</button><br>
+        <button style="float: inherit; width: 100px;" tabindex="-1" onmousedown="document.getElementById('chartInput').click()">Browse chart</button><br>
+        <button style="float: inherit; width: 100px;" tabindex="-1" onmousedown="saveChart()">Save chart</button><br>
+        
+        <input tabindex="-1" type="text" id="setBpm" size="10" style="float: inherit; text-align: center;" value="180"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setBpm()">Set BPM</button><br>
+        
+        <input tabindex="-1" type="text" id="setOffset" size="10" style="float: inherit; text-align: center;" value="0"><br>
+        <button tabindex="-1" style="z-index: inherit; float: inherit; width: 100px;" onmousedown="setOffset()">Set ms offset</button><br>
+        
+        <input tabindex="-1" type="text" id="setSnapping" size="10" style="float: inherit; text-align: center;" value="4"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setSnapping()">Set snapping</button><br>
+        <textarea style="float: inherit; position: fixed; bottom: 0; left: 0; width: 100px;" tabindex="-1" id="savedChart"></textarea>
+      </div>
+      <div style="float: right;">
+        <button tabindex="-1" style="float: right; width: 100px;" onmousedown="copyTime()">Copy time to clipboard</button><br>
+        <input tabindex="-1" type="text" id="setAnchor" size="10" style="float: inherit; text-align: center;" value="0"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setAnchor()">Set anchor</button><br>
+        
+        <!-- <label for="selectedNoteID" style="float: inherit; color: white;">selected note ID:</label><br>
+        <input tabindex="-1" type="text" id="selectedNoteID" size="10" style="float: inherit; text-align: center;"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="jumpToSelectedNote()">Jump to ID</button><br> -->
+        
+        <input tabindex="-1" type="text" id="setScrollSpeed" size="10" style="float: inherit; text-align: center;" value="400"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setScrollSpeed()">Set scroll speed</button><br>
+        
+        <input tabindex="-1" type="text" id="setMwheelSpeed" size="10" style="float: inherit; text-align: center;" value="1"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setMwheelSpeed()">Set mwheel speed</button><br>
+        
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="makeLongNote()">Make long note</button><br>
+
+        <button id="switchMode" tabindex="-1" style="float: inherit; width: 100px;" onmousedown="switchMode()">Mode: note</button><br>
+        <div style="float: inherit; display: flex; transform-origin: 50% 50%; position: relative;margin: auto; background-color: rgba(110,110,255,1);">
+          <div id="dirChanger" style="padding: 35.5px 0;" onmousedown="changeDirection()">
+            <img src="img/note.png" tabindex="-1" style="width: 100px; float: inherit; filter: brightness(1000%);">
+          </div>
+          <div id="eDir">
+            <img src="img/effect_h.png" id="eDirH" tabindex="-1" style="width: 100px; float: inherit; filter: brightness(1000%); position: relative;" onmousedown="changeEffectDirection()">
+            <img src="img/effect_v.png" id="eDirV" tabindex="-1" style="width: 100px; float: inherit; filter: brightness(1000%); opacity: 0; position: fixed;" onmousedown="changeEffectDirection()">
+          </div>
+        </div>
+        <br>  
+        
+        <div id="eSettings" style="float: inherit;">
+        <input tabindex="-1" type="text" id="setEffectDuration" size="10" style="float: inherit; text-align: center;" value="1"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectDuration()">Set duration (this×snapping)</button><br>
+        
+        <input tabindex="-1" type="text" id="setEffectOpacity1" size="10" style="float: inherit; text-align: center;" value="0"><br>
+        <input tabindex="-1" type="text" id="setEffectOpacity2" size="10" style="float: inherit; text-align: center;" value="1"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectOpacity()">Set opacity</button><br>
+
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="renderEffects()">Apply effect</button><br>
+        </div>
+
+        
+        <button tabindex="-1" style="position: fixed; bottom: 0; right: 0; float:right; width: 100px; height: 100px;" onmousedown="closeWindow()">Exit</button>
+      </div>
+    </div>
+    
+    
+    <!--THE GRID-->
+    <div class="grid">
+      <table>
+        <tbody id="table">
+          <tr>
+            <td id="c00"><img id="s00" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i00" src="img/cell_background.png" style="z-index: 1;"><img id="v00" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h00" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b00" src="img/cell_border_light.png" onmousedown="checkClick(event,'00')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c01"><img id="s01" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i01" src="img/cell_background.png" style="z-index: 1;"><img id="v01" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h01" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b01" src="img/cell_border_light.png" onmousedown="checkClick(event,'01')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c02"><img id="s02" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i02" src="img/cell_background.png" style="z-index: 1;"><img id="v02" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h02" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b02" src="img/cell_border_light.png" onmousedown="checkClick(event,'02')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c03"><img id="s03" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i03" src="img/cell_background.png" style="z-index: 1;"><img id="v03" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h03" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b03" src="img/cell_border_light.png" onmousedown="checkClick(event,'03')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c04"><img id="s04" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i04" src="img/cell_background.png" style="z-index: 1;"><img id="v04" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h04" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b04" src="img/cell_border_light.png" onmousedown="checkClick(event,'04')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+          </tr>
+          <tr>
+            <td id="c10"><img id="s10" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i10" src="img/cell_background.png" style="z-index: 1;"><img id="v10" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h10" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b10" src="img/cell_border_light.png" onmousedown="checkClick(event,'10')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c11"><img id="s11" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i11" src="img/cell_background.png" style="z-index: 1;"><img id="v11" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h11" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b11" src="img/cell_border_light.png" onmousedown="checkClick(event,'11')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c12"><img id="s12" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i12" src="img/cell_background.png" style="z-index: 1;"><img id="v12" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h12" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b12" src="img/cell_border_light.png" onmousedown="checkClick(event,'12')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c13"><img id="s13" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i13" src="img/cell_background.png" style="z-index: 1;"><img id="v13" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h13" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b13" src="img/cell_border_light.png" onmousedown="checkClick(event,'13')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c14"><img id="s14" src="img/expl_sprite.png" style="z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i14" src="img/cell_background.png" style="z-index: 1;"><img id="v14" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h14" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b14" src="img/cell_border_light.png" onmousedown="checkClick(event,'14')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+          </tr>
+          <tr>
+            <td id="c20"><img id="s20" src="img/expl_sprite.png" style="background-color: transparent; z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i20" src="img/cell_background.png" style="z-index: 1;"><img id="v20" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h20" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b20" src="img/cell_border_light.png" onmousedown="checkClick(event,'20')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c21"><img id="s21" src="img/expl_sprite.png" style="background-color: transparent; z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i21" src="img/cell_background.png" style="z-index: 1;"><img id="v21" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h21" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b21" src="img/cell_border_light.png" onmousedown="checkClick(event,'21')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c22"><img id="s22" src="img/expl_sprite.png" style="background-color: transparent; z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i22" src="img/cell_background.png" style="z-index: 1;"><img id="v22" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h22" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b22" src="img/cell_border_light.png" onmousedown="checkClick(event,'22')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c23"><img id="s23" src="img/expl_sprite.png" style="background-color: transparent; z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i23" src="img/cell_background.png" style="z-index: 1;"><img id="v23" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h23" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b23" src="img/cell_border_light.png" onmousedown="checkClick(event,'23')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+            <td id="c24"><img id="s24" src="img/expl_sprite.png" style="background-color: transparent; z-index: 15; position: fixed; overflow: hidden; object-fit: none; object-position: -1305px 0; width: 256px; height: 256px;"><img id="i24" src="img/cell_background.png" style="z-index: 1;"><img id="v24" src="img/effect_v.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="h24" src="img/effect_h.png" style="z-index: 4; position: absolute; left: 2.5px; top: 1px;"><img id="b24" src="img/cell_border_light.png" onmousedown="checkClick(event,'24')" style="z-index: 4; position: absolute; left: 2.5px;"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <canvas id="canvas" onmousedown="checkClick(event)"></canvas>
+
+
+    <!-- Neutralino.js client. This file is gitignored, 
+         because `neu update` typically downloads it.
+         Avoid copy-pasting it. -->
+    <!--script src="js/neutralino.js"></script-->
+
+    <!-- Your app's source files -->
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/audioHandling.js"></script>
+    <script type="text/javascript" src="js/chartHandling.js"></script>
+    <script type="text/javascript" src="js/visualHandling.js"></script>
+    
+
+    <!--KEYBINDS-->
+    <script src="js/mousetrap.js"></script>
+    <script>
+      //modifiers: shift ctrl alt meta
+      //generic modifier: mod
+
+      //option = alt, command = meta
+
+      //specials:
+      //backspace tab enter return capslock esc space pageup pagedown
+      //end home left up right right down ins del plus
+
+      //combination eg. "ctrl+s"
+
+      //sequence of keys eg. "left left"
+
+      // Mousetrap.bind("f11",      ()=>toggleFullscreen());
+      Mousetrap.bind("space",    ()=>playPauseAudio());
+      Mousetrap.bind("ctrl+o",   ()=>document.getElementById('audioInput').click());
+      Mousetrap.bind("ctrl+k",   ()=>document.getElementById('chartInput').click());
+      Mousetrap.bind("mod+s",    ()=>saveChart());
+      Mousetrap.bind("backspace",()=>deleteSelectedNotes());
+      Mousetrap.bind("r",        ()=>changeDirection());
+      Mousetrap.bind("shift+r",  ()=>{changeDirection();changeDirection();changeDirection()})
+      Mousetrap.bind("p",        ()=>showcase());
+      Mousetrap.bind("l",        ()=>stopShowcase());
+      Mousetrap.bind("ctrl",     ()=>ctrlPressed = true),
+      Mousetrap.bind("ctrl",     ()=>ctrlPressed = false, "keyup");
+      Mousetrap.bind("esc",      ()=>deselectNotes());
+      Mousetrap.bind("ctrl+a",   ()=>selectAllNotes());
+      Mousetrap.bind("tab",      ()=>toggleUI())
+      Mousetrap.bind("m",        ()=>seekAudio())
+      Mousetrap.bind("enter",    ()=>{if (noteMode) makeLongNote(); else renderEffects()})
+    </script>
+  </body>
+</html>
