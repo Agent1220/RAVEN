@@ -176,7 +176,8 @@ function checkClick(event){
             }
             i++;
         }
-    } else {
+    }
+    if (!note) {
         let i = 3;
         while (i-- && !cell){
             let j = 5;
