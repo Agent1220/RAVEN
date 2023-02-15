@@ -177,6 +177,7 @@ function checkClick(event){
             i++;
         }
     }
+    
     if (!note) {
         let i = 3;
         while (i-- && !cell){
