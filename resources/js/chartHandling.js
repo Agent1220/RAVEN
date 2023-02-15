@@ -41,6 +41,12 @@ function chartLoading(data){
     chartHead = chartFile.head;
     //console.log("loaded chart head");
 
+    document.getElementById("setSongName").value = chartMetadata.songName;
+    document.getElementById("setSongArtist").value = chartMetadata.artist;
+    document.getElementById("setGenre").value = chartMetadata.genre;
+    document.getElementById("setScale").value = chartMetadata.scale;
+    document.getElementById("setCharter").value = chartMetadata.charter;
+
     //minSec = convertToMinSec(chartHead.length);
     timeText.innerHTML = `0:00 / ${minSec}`;
     setSnapping();
