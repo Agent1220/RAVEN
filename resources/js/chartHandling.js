@@ -35,30 +35,32 @@ function chartLoading(data){
     }
     //console.log(data);
     chartFile = data;
-    console.log(`got chart file, beginning loading\n`,chartFile);
+    //console.log(`got chart file, beginning loading\n`,chartFile);
     chartMetadata = chartFile.meta;
-    console.log("loaded chart metadata");
+    //console.log("loaded chart metadata");
     chartHead = chartFile.head;
-    console.log("loaded chart head");
+    //console.log("loaded chart head");
 
     //minSec = convertToMinSec(chartHead.length);
     timeText.innerHTML = `0:00 / ${minSec}`;
     setSnapping();
-    console.log("snapping set");
+    //console.log("snapping set");
 
     audioOffset = chartHead.offset;
     document.getElementById("setOffset").value = audioOffset * 1000;
-    console.log("audio offset set");
+    // console.log("audio offset set");
 
     document.getElementById("setBpm").value = chartHead.startingBpm;
     BPM = chartHead.startingBpm;
     nextStep = 60 / BPM * 4/snapping;
-    console.log("bpm and snapping set");
+    // console.log("bpm and snapping set");
 
-    console.log("loading notes...");
+
+
+    // console.log("loading notes...");
     loadChartNotes(chartFile.notes);
 
-    console.log("loading effects...");
+    // console.log("loading effects...");
     loadChartEffects(chartFile.effects);
 
     alert("Loaded chart!");
@@ -70,9 +72,9 @@ function loadChartNotes(inputNotes){
         cId = 0;
         flyingNotes = [];
         //longNoteConnections = [];
-        console.log("nulled notes and counter");
+        // console.log("nulled notes and counter");
 
-        console.log("uncompressing");
+        // console.log("uncompressing");
         for (let i = 0; i < inputNotes.length; i++){
             if (inputNotes[i]){
                 //longNoteConnections[i] = [];
@@ -96,19 +98,19 @@ function loadChartNotes(inputNotes){
                 chartNotes.push(null);
             }
         }
-        console.log("uncompressed");
+        // console.log("uncompressed");
 
-        console.log("rendering notes...");
+        // console.log("rendering notes...");
         if (!noteMode) switchMode();
         for (let n of chartNotes){
-            console.log("attempting to add note...");
+            // console.log("attempting to add note...");
             addNote(n);
-            console.log(cId);
+            // console.log(cId);
         }
         deselectNotes();
-        console.log("rendered notes");
+        // console.log("rendered notes");
 
-        console.log("creating long notes");
+        // console.log("creating long notes");
         for (let n of flyingNotes){
             if (n){
                 if (n.tailId != -1){
@@ -119,12 +121,12 @@ function loadChartNotes(inputNotes){
                 }
             }
         }
-        console.log("created long notes");
+        // console.log("created long notes");
 
-        console.log("loaded notes");
+        // console.log("loaded notes");
 
     } else {
-        console.log("there was nothing to load");
+        // console.log("there was nothing to load");
     }
 }
 
@@ -146,10 +148,10 @@ function loadChartEffects(inputEffects){
         for (let e of chartEffects){
             renderEffects(e);
         }
-        console.log("loaded effects");
+        // console.log("loaded effects");
 
     } else {
-        console.log("there was nothing to load");
+        // console.log("there was nothing to load");
     }
 }
 
