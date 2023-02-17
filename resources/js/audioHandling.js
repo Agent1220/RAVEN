@@ -53,7 +53,23 @@ function setOffset(){
     snapAudio();
 }
 
+function setPlaybackSpeed(){
+    audio.playbackRate = document.getElementById("setPlaybackSpeed").value;
+}
 
+function decreasePlaybackSpeed(){
+    let element = document.getElementById("setPlaybackSpeed");
+    if (Number(element.value) > 0.1){
+        element.value = Math.round((Number(element.value) - 0.1)*10)/10;
+        setPlaybackSpeed();
+    }
+}
+
+function increasePlaybackSpeed(){
+    let element = document.getElementById("setPlaybackSpeed");
+    element.value = Math.round((Number(element.value) + 0.1)*10)/10;
+    setPlaybackSpeed();
+}
 
 function setSnapping(){
     snapping = document.getElementById("setSnapping").value;  

@@ -54,7 +54,7 @@
 
       </div>
       <div style="float: right;">
-        <button tabindex="-1" style="float: right; width: 100px;" onmousedown="copyTime()">Copy time to clipboard</button><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="copyTime()">Copy time to clipboard</button><br>
         <input tabindex="-1" type="text" id="setAnchor" size="10" value="0"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setAnchor()">Set anchor</button><br>
         
@@ -63,6 +63,9 @@
         
         <input tabindex="-1" type="text" id="setMwheelSpeed" size="10" value="1"><br>
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setMwheelSpeed()">Set mwheel speed</button><br>
+
+        <input tabindex="-1" type="text" id="setPlaybackSpeed" size="10" value="1"><br>
+        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setPlaybackSpeed()">Set playback speed</button><br>
         
         <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="makeLongNote()">Make long note</button><br>
 
@@ -148,7 +151,7 @@
 
       //specials:
       //backspace tab enter return capslock esc space pageup pagedown
-      //end home left up right right down ins del plus
+      //end home left up right down ins del plus
 
       //combination eg. "ctrl+s"
 
@@ -171,6 +174,8 @@
       Mousetrap.bind("tab",      ()=>toggleUI())
       Mousetrap.bind("m",        ()=>seekAudio())
       Mousetrap.bind("enter",    ()=>{if (noteMode) makeLongNote(); else renderEffects()})
+      Mousetrap.bind("w",        ()=>increasePlaybackSpeed());
+      Mousetrap.bind("s",        ()=>decreasePlaybackSpeed());
     </script>
   </body>
 </html>
