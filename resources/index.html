@@ -176,6 +176,10 @@
       Mousetrap.bind("enter",    ()=>{if (noteMode) makeLongNote(); else renderEffects()})
       Mousetrap.bind("w",        ()=>increasePlaybackSpeed());
       Mousetrap.bind("s",        ()=>decreasePlaybackSpeed());
+      Mousetrap.bind("q",        ()=>moveNotesTime(false));
+      Mousetrap.bind("e",        ()=>moveNotesTime(true));
+      Mousetrap.bind("a",        ()=>stepAudio(false));
+      Mousetrap.bind("d",        ()=>stepAudio(true));
     </script>
   </body>
 </html>

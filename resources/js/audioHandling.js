@@ -158,6 +158,17 @@ function seekAudio(event){
     }
 }
 
+function stepAudio(fw){
+    if (fw){
+        audio.currentTime = audio.currentTime + nextStep;
+    } else {
+        if (audio.currentTime - nextStep >= 0){
+            audio.currentTime = audio.currentTime - nextStep;
+        }
+    }
+    snapAudio();
+}
+
 function copyTime(){
     navigator.clipboard.writeText(audio.currentTime);
 }
@@ -186,6 +197,32 @@ function snapAudio(){
     }
 }
 
+function moveNotesTime(forward){
+    for (let s of selectedNotes){
+        for (let n of flyingNotes){
+            if (n){
+                if (n.id == s){
+                    let step = (forward) ? n.time + nextStep 
+                    : n.time - nextStep > 0 ?  n.time - nextStep
+                    : n.time;
+                    n.time = step;
+                    n.snap = snapping;
+                }
+
+                for (let c of canvasObjects){
+                    if (c.id == n.id){ //if head of LN
+                        let step = (forward) ? c.time + nextStep 
+                        : c.time - nextStep > 0 ?  c.time - nextStep
+                        : c.time;
+                        c.time = step;
+                        c.snap = snapping;
+                    }
+                }
+            }
+        }
+    }
+    updatePositions();
+}
 
 function snapTime(time, snap){
     let i = 0;
