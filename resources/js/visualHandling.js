@@ -754,24 +754,40 @@ function redrawCanvas(){
                         }
                         break;
                     case 3:
-                        if (timeUntilLand <= 0) {
-                            ctx.fillStyle = fill.active;
-                            ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
-                        } else {
-                            if ((-d.w+timeUntilLand)*scrollSpeed <= 0){
-                                ctx.fillStyle = fill.active;
-                                ctx.fillRect(d.x,d.y,(d.w-timeUntilLand)*scrollSpeed,d.h);
+                        // if (timeUntilLand <= 0) {
+                        //     let grd = ctx.createLinearGradient(d.x + canvas.width/2,d.y,d.x + canvas.width/2 - 0.1*scrollSpeed,d.y);
+                        //     grd.addColorStop(0, `rgba(128,128,128,0)`);
+                        //     grd.addColorStop(1, `rgba(128,128,128,1)`);
+                            
+                        // //ctx.fillStyle = fill.active;
+                        //     ctx.fillStyle = grd;
+                        //     ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
+                        // } else {
+                        //     if ((-d.w+timeUntilLand)*scrollSpeed <= 0){
+                        //         ctx.fillStyle = fill.active;
+                        //         ctx.fillRect(d.x,d.y,(d.w-timeUntilLand)*scrollSpeed,d.h);
+                        //         let grd = ctx.createLinearGradient(d.x,d.y,d.x - 0.1*scrollSpeed,d.y);
+                        //         grd.addColorStop(0, fill.active);
+                        //         grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
+                        //         ctx.fillStyle = grd;
+                        //         //ctx.fillStyle = fill.inactive;
+                        //         ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,timeUntilLand*scrollSpeed,d.h);                      
+                        //     }else {
+                        //         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        //         ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
+                        //     }
+                        // }
 
-                                let grd = ctx.createLinearGradient(d.x,d.y,d.x - 0.1*scrollSpeed,d.y);
-                                grd.addColorStop(0, fill.active);
-                                grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
-                                ctx.fillStyle = grd;
-                                //ctx.fillStyle = fill.inactive;
-                                ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,timeUntilLand*scrollSpeed,d.h);                      
-                            }else {
-                                ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                                ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
-                            }
+                        if (-256 < d.x-timeUntilLand*scrollSpeed + d.w*scrollSpeed && -timeUntilLand*scrollSpeed < canvas.width/2 + 256){
+                            let grd = ctx.createLinearGradient(d.x - 0.1*scrollSpeed,d.y,d.x + canvas.width/2,d.y);
+                            let grdLength = canvas.width/2 + 0.1*scrollSpeed;
+                            grd.addColorStop(0, `rgba(128,128,128,${inactiveOpacity})`);
+                            grd.addColorStop(0.1*scrollSpeed/grdLength, `rgba(128,128,128,1)`);
+                            grd.addColorStop((canvas.width/2)/grdLength,`rgba(128,128,128,1)`);
+                            grd.addColorStop(1,`rgba(128,128,128,0)`);
+
+                            ctx.fillStyle = grd;
+                            ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
                         }
                         break;
                     case 5:
@@ -796,25 +812,38 @@ function redrawCanvas(){
                         }
                         break;
                     case 7:
-                        if (timeUntilLand <= 0) {
-                            ctx.fillStyle = fill.active;
-                            ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
-                        } else {
-                            if ((d.w+timeUntilLand)*scrollSpeed <= 0){
-                                ctx.fillStyle = fill.active;
-                                ctx.fillRect(d.x,d.y,(d.w+timeUntilLand)*scrollSpeed,d.h);
+                        // if (timeUntilLand <= 0) {
+                        //     ctx.fillStyle = fill.active;
+                        //     ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
+                        // } else {
+                        //     if ((d.w+timeUntilLand)*scrollSpeed <= 0){
+                        //         ctx.fillStyle = fill.active;
+                        //         ctx.fillRect(d.x,d.y,(d.w+timeUntilLand)*scrollSpeed,d.h);
 
-                                let grd = ctx.createLinearGradient(d.x,d.y,d.x + 0.1*scrollSpeed,d.y);
-                                grd.addColorStop(0, fill.active);
-                                grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
-                                ctx.fillStyle = grd;
-                                //ctx.fillStyle = fill.inactive;
-                                ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,-timeUntilLand*scrollSpeed,d.h);                 
-                            }else {
-                                ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                                ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
-                            }
+                        //         let grd = ctx.createLinearGradient(d.x,d.y,d.x + 0.1*scrollSpeed,d.y);
+                        //         grd.addColorStop(0, fill.active);
+                        //         grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
+                        //         ctx.fillStyle = grd;
+                        //         //ctx.fillStyle = fill.inactive;
+                        //         ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,-timeUntilLand*scrollSpeed,d.h);                 
+                        //     }else {
+                        //         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        //         ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
+                        //     }
+                        // }
+
+                        if (d.x+timeUntilLand*scrollSpeed < canvas.width - d.w*scrollSpeed) {
+                            let grd = ctx.createLinearGradient(d.x + 0.1*scrollSpeed,d.y,d.x - canvas.width/2,d.y);
+                            let grdLength = canvas.width/2 + 0.1*scrollSpeed;
+                            grd.addColorStop(0, `rgba(128,128,128,${inactiveOpacity})`);
+                            grd.addColorStop(0.1*scrollSpeed/grdLength, `rgba(128,128,128,1)`);
+                            grd.addColorStop((canvas.width/2)/grdLength,`rgba(128,128,128,1)`);
+                            grd.addColorStop(1,`rgba(128,128,128,0)`);
+
+                            ctx.fillStyle = grd;
+                            ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
                         }
+
                         break;
                     
                     default:
