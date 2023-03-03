@@ -390,10 +390,10 @@ function drawNote(note){
         case 3:
             x = note.target.x - (timeUntilLand * scrollSpeed); 
             if (-256 <= x && x <= note.target.x + canvas.width/2){
-                let fadeinTreshold = note.target.x + canvas.width/2 - scrollSpeed/2;
+                let fadeinTreshold = note.target.x + canvas.width/2 - scrollSpeed*0.1;
                     if (fadeinTreshold < x){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed/2)})`;
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed/2)})`;
+                        ctx.strokeStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
+                        ctx.fillStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
                     } else if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
@@ -440,14 +440,16 @@ function drawNote(note){
         case 7:
             x = note.target.x + (timeUntilLand * scrollSpeed); 
             if (note.target.x - canvas.width/2 <= x && x <= canvas.width){
-                let fadeinTreshold = note.target.x - canvas.width/2 + scrollSpeed/2;
-                    if (fadeinTreshold > x){ // idk why it's offset by 5
-                        ctx.strokeStyle = `rgba(128,128,128,${(x + fadeinTreshold)/(scrollSpeed/2) - 5})`; 
-                        ctx.fillStyle = `rgba(128,128,128,${(x + fadeinTreshold)/(scrollSpeed/2) - 5})`;
-                    } else if (timeUntilLand <= 0.1){
+                let fadeinTreshold = note.target.x - canvas.width/2 + scrollSpeed*0.1;
+                    if (fadeinTreshold > x){
+                        ctx.strokeStyle = `rgba(128,128,128,${1 - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`; 
+                        ctx.fillStyle = `rgba(128,128,128,${1 - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`;
+                    } 
+                    else if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                    } else {
+                    } 
+                    else {
                         ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
                         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
                     }
