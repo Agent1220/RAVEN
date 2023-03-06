@@ -160,13 +160,14 @@ function seekAudio(event){
 
 function stepAudio(fw){
     if (fw){
-        audio.currentTime = audio.currentTime + nextStep;
+        audio.currentTime = audio.currentTime + nextStep * mwheelSpeed;
     } else {
-        if (audio.currentTime - nextStep >= 0){
-            audio.currentTime = audio.currentTime - nextStep;
+        if (audio.currentTime - nextStep * mwheelSpeed >= 0){
+            audio.currentTime = audio.currentTime - nextStep * mwheelSpeed;
         }
     }
-    snapAudio();
+    //snapAudio();
+    updatePositions();
 }
 
 function copyTime(){
