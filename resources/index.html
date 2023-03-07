@@ -79,17 +79,27 @@
             <img src="img/effect_v.png" id="eDirV" tabindex="-1" style="width: 100px; float: inherit; filter: brightness(1000%); opacity: 0; position: fixed;" onmousedown="changeEffectDirection()">
           </div>
         </div>
-        <br>  
+        <br>
+
+        <div id="noteSettings" style="float: right;">
+          <button tabindex="-1" style="float: inherit; width: 80px;" onmousedown="setLandingEffect()">Landing effect</button>
+          <input id="landingEffect" tabindex="-1" type="checkbox" style="float: inherit;" disabled checked>  
+        </div>
         
         <div id="eSettings" style="float: inherit;">
-        <input tabindex="-1" type="text" id="setEffectDuration" size="10" value="1"><br>
-        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectDuration()">Set duration (this×snapping)</button><br>
-        
-        <input tabindex="-1" type="text" id="setEffectOpacity1" size="10" value="0"><br>
-        <input tabindex="-1" type="text" id="setEffectOpacity2" size="10" value="1"><br>
-        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectOpacity()">Set opacity</button><br>
+          <input tabindex="-1" type="text" id="setEffectDuration" size="10" value="1"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectDuration()">Set duration (this×snapping)</button><br>
+          
+          <!-- <input tabindex="-1" type="text" id="setEffectOpacity1" size="10" value="0"><br>
+          <input tabindex="-1" type="text" id="setEffectOpacity2" size="10" value="1"><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="setEffectOpacity()">Set opacity</button><br> -->
 
-        <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="renderEffects()">Apply effect</button><br>
+          <!-- <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="renderEffects()">Apply effect</button><br> -->
+
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="renderEffects(1)">Fade in</button><br>
+          <button tabindex="-1" style="float: inherit; width: 100px;" onmousedown="renderEffects(0)">Fade out</button><br>
+          <button tabindex="-1" style="float: inherit; width: 80px;" onmousedown="setEffectRolling()">Rolling</button><br>
+          <input id="effectRolling" tabindex="-1" type="checkbox" style="float: inherit;" disabled>
         </div>
 
         
@@ -173,13 +183,15 @@
       Mousetrap.bind("ctrl+a",   ()=>selectAllNotes());
       Mousetrap.bind("tab",      ()=>toggleUI())
       Mousetrap.bind("m",        ()=>seekAudio())
-      Mousetrap.bind("enter",    ()=>{if (noteMode) makeLongNote(); else renderEffects()})
+      Mousetrap.bind("enter",    ()=>{if (noteMode) makeLongNote();})
       Mousetrap.bind("w",        ()=>increasePlaybackSpeed());
       Mousetrap.bind("s",        ()=>decreasePlaybackSpeed());
       Mousetrap.bind("q",        ()=>moveNotesTime(false));
       Mousetrap.bind("e",        ()=>moveNotesTime(true));
       Mousetrap.bind("a",        ()=>stepAudio(false));
       Mousetrap.bind("d",        ()=>stepAudio(true));
+      Mousetrap.bind("8",        ()=>{if (!noteMode) renderEffects(1);})
+      Mousetrap.bind("9",        ()=>{if (!noteMode) renderEffects(0);})
     </script>
   </body>
 </html>

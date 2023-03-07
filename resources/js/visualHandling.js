@@ -12,6 +12,9 @@ var selectedEffects = [];
 var curEDur = 1;
 var opacity1 = 0;
 var opacity2 = 1;
+var eRolling = false;
+
+var noteLandingEffect = true;
 
 var scrollSpeed = 400;
 
@@ -108,6 +111,14 @@ function setEffectDuration(){
 function setEffectOpacity(){
     opacity2 = Number(document.getElementById("setEffectOpacity2").value);
     opacity1 = Number(document.getElementById("setEffectOpacity1").value);
+}
+
+function setEffectRolling(){
+    eRolling = document.getElementById("effectRolling").toggleAttribute("checked");
+}
+
+function setLandingEffect(){
+    noteLandingEffect = document.getElementById("landingEffect").toggleAttribute("checked");
 }
 
 function toggleMetadataMenu(){
@@ -292,6 +303,30 @@ function addNote(note){
         selectedNotes.push(cId);
         //longNoteConnections[cId] = flyingNotes[cId].tailId; 
         cId++;
+
+        if (noteLandingEffect){
+            let ePack = {"time":snapTime(audio.currentTime - (240 / BPM), 2),
+                            "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+                            "duration":1,
+                            "target":`${note.cell}`,
+                            "opacity1": 0,
+                            "opacity2": 1,
+                            "id":`e${eId}`,
+                            "snap":2};
+                flyingEffects.push(ePack);
+                eId++;
+
+            ePack = {"time":snapTime(audio.currentTime + (120 / BPM) ,2),
+                            "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+                            "duration":1,
+                            "target":`${note.cell}`,
+                            "opacity1": 1,
+                            "opacity2": 0,
+                            "id":`e${eId}`,
+                            "snap":2};
+                flyingEffects.push(ePack);
+                eId++;
+        }
         
         //setSelectedNotes(flyingNotes[cId]);
         updatePositions();
@@ -475,24 +510,42 @@ function drawNote(note){
 }
 
 function renderEffects(effect){
-    if (!effect){
-        for (let i of selectedEffects){
-            let pack = {"time":snapTime(audio.currentTime,snapping),
-                        "direction":eDir,
-                        "duration":curEDur,
-                        "target":`${i}`,
-                        "opacity1":opacity1,
-                        "opacity2":opacity2,
-                        "id":`e${eId}`,
-                        "snap":snapping};
-            flyingEffects.push(pack);
-            eId++;
+    if (effect == 0 || effect == 1){
+        if (eRolling){
+            snapAudio();
+            let rollCount = selectedEffects.length;
+            for (let i of selectedEffects){
+                let pack = {"time":audio.currentTime - rollCount*nextStep,
+                            "direction":eDir,
+                            "duration":curEDur,
+                            "target":`${i}`,
+                            "opacity1": 1 - effect,
+                            "opacity2": effect,
+                            "id":`e${eId}`,
+                            "snap":snapping};
+                flyingEffects.push(pack);
+                eId++;
+                rollCount--;
+            }
+        } else {
+            for (let i of selectedEffects){
+                let pack = {"time":snapTime(audio.currentTime,snapping),
+                            "direction":eDir,
+                            "duration":curEDur,
+                            "target":`${i}`,
+                            "opacity1": 1 - effect,
+                            "opacity2": effect,
+                            "id":`e${eId}`,
+                            "snap":snapping};
+                flyingEffects.push(pack);
+                eId++;
+            }
         }
         for (let e of selectedEffects){
             document.getElementById(`b${e}`).style.opacity = 0;
         }
         selectedEffects = [];
-    } else {
+    } else if (effect) {
         let pack = {"time":effect.time,
                     "direction":effect.direction,
                     "duration":effect.duration,
@@ -500,7 +553,7 @@ function renderEffects(effect){
                     "opacity1":effect.opacity1,
                     "opacity2":effect.opacity2,
                     "id":`e${eId}`,
-                    "snap":effect.snapping};
+                    "snap":effect.snap};
         flyingEffects.push(pack);
         eId++;
     }
@@ -702,18 +755,18 @@ function tileLNBody(head, tail){
     
 }
 
-function updateEffect(effect){
+function updateEffect(effect){ 
     let timeUntilFire =  audio.currentTime - effect.time;
     let inds = effect.target.split("");
-
-    if (-tolerance <= timeUntilFire && audio.currentTime <= (effect.time + tolerance + effect.duration * nextStep)){
+    let snap = 60 / BPM * 4 / effect.snap;
+    if (-tolerance <= timeUntilFire && timeUntilFire <= (effect.time + effect.duration * snap) + tolerance){
         if (!(effect.direction % 2)){
             //console.log(timeUntilFire, effect.opacity/(effect.duration));
-            effectImages[inds[0]][inds[1]].h.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * nextStep)}`;
+            effectImages[inds[0]][inds[1]].h.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * snap)}`;
         }
         if (!(effect.direction % 3)){
             //console.log(timeUntilFire, effect.opacity, (effect.duration));
-            effectImages[inds[0]][inds[1]].v.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * nextStep)}`;
+            effectImages[inds[0]][inds[1]].v.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * snap)}`;
         }
     }
 }
@@ -1015,15 +1068,16 @@ function deleteSelectedEffects(){
     for (let i = 0; i < eId; i++){
         if (flyingEffects[i]){
             if (flyingEffects[i].time <= audio.currentTime 
-            && flyingEffects[i].time + flyingEffects[i].duration >= audio.currentTime){
-                indsToRevert.push({"direction":flyingEffects[i].direction,"target":flyingEffects[i].target})
-                flyingEffects[i] = null;
+            && audio.currentTime <= flyingEffects[i].time + flyingEffects[i].duration){
+                for (let s of selectedEffects){
+                    //console.log(flyingEffects[i]);
+                    if (flyingEffects[i] && s == flyingEffects[i].target){
+                        indsToRevert.push({"direction":flyingEffects[i].direction,"target":flyingEffects[i].target})
+                        flyingEffects[i] = null;
+                    }
+                }
             }
         }
-    }
-
-    for (let e of selectedEffects){
-        document.getElementById(`b${e}`).style.opacity = 0;
     }
     for (let e of indsToRevert){
         let inds = e.target.split("");
@@ -1035,6 +1089,9 @@ function deleteSelectedEffects(){
         }
     }
     updatePositions();
+    for (let e of selectedEffects){
+        document.getElementById(`b${e}`).style.opacity = 0;
+    }
     selectedEffects = [];
 }
 
@@ -1087,7 +1144,6 @@ function selectAllNotes(){
         }
         updatePositions();
     } else {
-
         for (let i = 0; i < 3; i++){
             for (let j = 0; j < 5; j++){
                 setSelectedEffects(`${i}${j}`)
