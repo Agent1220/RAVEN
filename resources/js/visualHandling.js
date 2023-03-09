@@ -14,7 +14,7 @@ var opacity1 = 0;
 var opacity2 = 1;
 var eRolling = false;
 
-var noteLandingEffect = true;
+//var noteLandingEffect = false;
 
 var scrollSpeed = 400;
 
@@ -117,9 +117,9 @@ function setEffectRolling(){
     eRolling = document.getElementById("effectRolling").toggleAttribute("checked");
 }
 
-function setLandingEffect(){
-    noteLandingEffect = document.getElementById("landingEffect").toggleAttribute("checked");
-}
+// function setLandingEffect(){
+//     noteLandingEffect = document.getElementById("landingEffect").toggleAttribute("checked");
+// }
 
 function toggleMetadataMenu(){
     let metaDiv = document.getElementById("metadataSettings");
@@ -304,7 +304,7 @@ function addNote(note){
         //longNoteConnections[cId] = flyingNotes[cId].tailId; 
         cId++;
 
-        if (noteLandingEffect){
+        if (altPressed){
             let ePack = {"time":snapTime(audio.currentTime - (240 / BPM), 2),
                             "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
                             "duration":1,

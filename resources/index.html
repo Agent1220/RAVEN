@@ -82,8 +82,8 @@
         <br>
 
         <div id="noteSettings" style="float: right;">
-          <button tabindex="-1" style="float: inherit; width: 80px;" onmousedown="setLandingEffect()">Landing effect</button>
-          <input id="landingEffect" tabindex="-1" type="checkbox" style="float: inherit;" disabled checked>  
+          <!-- <button tabindex="-1" style="float: inherit; width: 80px;" onmousedown="setLandingEffect()">Landing effect</button>
+          <input id="landingEffect" tabindex="-1" type="checkbox" style="float: inherit;" disabled checked>   -->
         </div>
         
         <div id="eSettings" style="float: inherit;">
@@ -192,6 +192,8 @@
       Mousetrap.bind("d",        ()=>stepAudio(true));
       Mousetrap.bind("8",        ()=>{if (!noteMode) renderEffects(1);})
       Mousetrap.bind("9",        ()=>{if (!noteMode) renderEffects(0);})
+      Mousetrap.bind("alt",      ()=>altPressed = true),
+      Mousetrap.bind("alt",      ()=>altPressed = false, "keyup");
     </script>
   </body>
 </html>
