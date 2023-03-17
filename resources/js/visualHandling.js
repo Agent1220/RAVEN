@@ -12,6 +12,9 @@ var selectedEffects = [];
 var curEDur = 1;
 var opacity1 = 0;
 var opacity2 = 1;
+var eRolling = false;
+
+//var noteLandingEffect = false;
 
 var scrollSpeed = 400;
 
@@ -25,6 +28,7 @@ var checkOffset = {"vertical":{"x":4,"y":118},
 var gridPositions = [];
 var effectImages = [{"v":"doc", "h":"doc"}];
 var explosions = [];
+var backLights = [];
                    
 var topControlsElement = document.getElementById("topControls");
 var dirC = document.getElementById("dirChanger");
@@ -76,10 +80,13 @@ function getCells(){
 
 function getEffectImages(){
     effectImages = [];
+    backLights = [];
+
     let gpi = 3;
     while (gpi--) {
         let gpj = 5;
         let row = [];
+        let grow = [];
         while (gpj--) {
             let target = {
                "v":document.getElementById(`v${gpi}${gpj}`),
@@ -89,10 +96,20 @@ function getEffectImages(){
             document.getElementById(`v${gpi}${gpj}`).style.opacity = "0";
             document.getElementById(`h${gpi}${gpj}`).style.opacity = "0";
             document.getElementById(`b${gpi}${gpj}`).style.opacity = "0";
+
             
             row.unshift(target);
+            
+            document.getElementById(`g${gpi}${gpj}`).style.opacity = "0";
+            let grad = {
+                "img": document.getElementById(`g${gpi}${gpj}`),
+                "times":[] // time, by
+            };
+
+            grow.unshift(grad);
         }
         effectImages.unshift(row);
+        backLights.unshift(grow);
     }
 }
 
@@ -109,6 +126,14 @@ function setEffectOpacity(){
     opacity2 = Number(document.getElementById("setEffectOpacity2").value);
     opacity1 = Number(document.getElementById("setEffectOpacity1").value);
 }
+
+function setEffectRolling(){
+    eRolling = document.getElementById("effectRolling").toggleAttribute("checked");
+}
+
+// function setLandingEffect(){
+//     noteLandingEffect = document.getElementById("landingEffect").toggleAttribute("checked");
+// }
 
 function toggleMetadataMenu(){
     let metaDiv = document.getElementById("metadataSettings");
@@ -177,7 +202,7 @@ function checkClick(event){
             i++;
         }
     }
-    
+
     if (!note) {
         let i = 3;
         while (i-- && !cell){
@@ -290,8 +315,33 @@ function addNote(note){
 
         flyingNotes.push(pack)
         selectedNotes.push(cId);
+        backLights[inds[0]][inds[1]].times.push({"time":pack.time,"by":pack.id});
         //longNoteConnections[cId] = flyingNotes[cId].tailId; 
         cId++;
+
+        if (altPressed){
+            let ePack = {"time":snapTime(audio.currentTime - (240 / BPM), 2),
+                            "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+                            "duration":1,
+                            "target":`${note.cell}`,
+                            "opacity1": 0,
+                            "opacity2": 1,
+                            "id":`e${eId}`,
+                            "snap":2};
+                flyingEffects.push(ePack);
+                eId++;
+
+            ePack = {"time":snapTime(audio.currentTime + (120 / BPM) ,2),
+                            "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+                            "duration":1,
+                            "target":`${note.cell}`,
+                            "opacity1": 1,
+                            "opacity2": 0,
+                            "id":`e${eId}`,
+                            "snap":2};
+                flyingEffects.push(ePack);
+                eId++;
+        }
         
         //setSelectedNotes(flyingNotes[cId]);
         updatePositions();
@@ -339,7 +389,15 @@ function updatePositions(){
                     j.fire = false;
                 }
             }
-        } else fireExplosions();
+            for (const r of backLights) {
+                for (const c of r) {
+                    c.img.style.opacity = `${0}`;
+                }
+            }
+        } else {
+            fireExplosions();
+            checkBackLights();
+        }
     }
     if (eId){
         if (audio.paused) resetEffects();
@@ -361,7 +419,7 @@ function drawNote(note){
     switch (note.direction) {
         case 2:
             y = note.target.y + (timeUntilLand * scrollSpeed); 
-            if (-256 <= y && y <= canvas.height  + 256){
+            if (-256 <= y && y <= canvas.height){
                     if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
@@ -389,8 +447,12 @@ function drawNote(note){
             break;
         case 3:
             x = note.target.x - (timeUntilLand * scrollSpeed); 
-            if (-256 <= x && x <= canvas.width/2   + 256){
-                    if (timeUntilLand <= 0.1){
+            if (-256 <= x && x <= note.target.x + canvas.width/2){
+                let fadeinTreshold = note.target.x + canvas.width/2 - scrollSpeed*0.1;
+                    if (fadeinTreshold < x){
+                        ctx.strokeStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
+                        ctx.fillStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
+                    } else if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                     } else {
@@ -412,7 +474,7 @@ function drawNote(note){
             break;
         case 5:
             y = note.target.y - (timeUntilLand * scrollSpeed); 
-            if (-256 <= y && y <= canvas.height  + 256){
+            if (-256 <= y && y <= canvas.height){
                     if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
@@ -435,11 +497,17 @@ function drawNote(note){
             break;
         case 7:
             x = note.target.x + (timeUntilLand * scrollSpeed); 
-            if (-256 <= x && x <= canvas.width/2   + 256){
-                    if (timeUntilLand <= 0.1){
+            if (note.target.x - canvas.width/2 <= x && x <= canvas.width){
+                let fadeinTreshold = note.target.x - canvas.width/2 + scrollSpeed*0.1;
+                    if (fadeinTreshold > x){
+                        ctx.strokeStyle = `rgba(128,128,128,${1 - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`; 
+                        ctx.fillStyle = `rgba(128,128,128,${1 - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`;
+                    } 
+                    else if (timeUntilLand <= 0.1){
                         ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
                         ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                    } else {
+                    } 
+                    else {
                         ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
                         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
                     }
@@ -465,24 +533,42 @@ function drawNote(note){
 }
 
 function renderEffects(effect){
-    if (!effect){
-        for (let i of selectedEffects){
-            let pack = {"time":snapTime(audio.currentTime,snapping),
-                        "direction":eDir,
-                        "duration":curEDur,
-                        "target":`${i}`,
-                        "opacity1":opacity1,
-                        "opacity2":opacity2,
-                        "id":`e${eId}`,
-                        "snap":snapping};
-            flyingEffects.push(pack);
-            eId++;
+    if (effect == 0 || effect == 1){
+        if (eRolling){
+            snapAudio();
+            let rollCount = selectedEffects.length;
+            for (let i of selectedEffects){
+                let pack = {"time":audio.currentTime - rollCount*nextStep,
+                            "direction":eDir,
+                            "duration":curEDur,
+                            "target":`${i}`,
+                            "opacity1": 1 - effect,
+                            "opacity2": effect,
+                            "id":`e${eId}`,
+                            "snap":snapping};
+                flyingEffects.push(pack);
+                eId++;
+                rollCount--;
+            }
+        } else {
+            for (let i of selectedEffects){
+                let pack = {"time":snapTime(audio.currentTime,snapping),
+                            "direction":eDir,
+                            "duration":curEDur,
+                            "target":`${i}`,
+                            "opacity1": 1 - effect,
+                            "opacity2": effect,
+                            "id":`e${eId}`,
+                            "snap":snapping};
+                flyingEffects.push(pack);
+                eId++;
+            }
         }
         for (let e of selectedEffects){
             document.getElementById(`b${e}`).style.opacity = 0;
         }
         selectedEffects = [];
-    } else {
+    } else if (effect) {
         let pack = {"time":effect.time,
                     "direction":effect.direction,
                     "duration":effect.duration,
@@ -490,7 +576,7 @@ function renderEffects(effect){
                     "opacity1":effect.opacity1,
                     "opacity2":effect.opacity2,
                     "id":`e${eId}`,
-                    "snap":effect.snapping};
+                    "snap":effect.snap};
         flyingEffects.push(pack);
         eId++;
     }
@@ -692,18 +778,18 @@ function tileLNBody(head, tail){
     
 }
 
-function updateEffect(effect){
+function updateEffect(effect){ 
     let timeUntilFire =  audio.currentTime - effect.time;
     let inds = effect.target.split("");
-
-    if (-tolerance <= timeUntilFire && audio.currentTime <= (effect.time + tolerance + effect.duration * nextStep)){
+    let snap = 60 / BPM * 4 / effect.snap;
+    if (-tolerance <= timeUntilFire && timeUntilFire <= (effect.time + effect.duration * snap) + tolerance){
         if (!(effect.direction % 2)){
             //console.log(timeUntilFire, effect.opacity/(effect.duration));
-            effectImages[inds[0]][inds[1]].h.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * nextStep)}`;
+            effectImages[inds[0]][inds[1]].h.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * snap)}`;
         }
         if (!(effect.direction % 3)){
             //console.log(timeUntilFire, effect.opacity, (effect.duration));
-            effectImages[inds[0]][inds[1]].v.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * nextStep)}`;
+            effectImages[inds[0]][inds[1]].v.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * snap)}`;
         }
     }
 }
@@ -744,24 +830,40 @@ function redrawCanvas(){
                         }
                         break;
                     case 3:
-                        if (timeUntilLand <= 0) {
-                            ctx.fillStyle = fill.active;
-                            ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
-                        } else {
-                            if ((-d.w+timeUntilLand)*scrollSpeed <= 0){
-                                ctx.fillStyle = fill.active;
-                                ctx.fillRect(d.x,d.y,(d.w-timeUntilLand)*scrollSpeed,d.h);
+                        // if (timeUntilLand <= 0) {
+                        //     let grd = ctx.createLinearGradient(d.x + canvas.width/2,d.y,d.x + canvas.width/2 - 0.1*scrollSpeed,d.y);
+                        //     grd.addColorStop(0, `rgba(128,128,128,0)`);
+                        //     grd.addColorStop(1, `rgba(128,128,128,1)`);
+                            
+                        // //ctx.fillStyle = fill.active;
+                        //     ctx.fillStyle = grd;
+                        //     ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
+                        // } else {
+                        //     if ((-d.w+timeUntilLand)*scrollSpeed <= 0){
+                        //         ctx.fillStyle = fill.active;
+                        //         ctx.fillRect(d.x,d.y,(d.w-timeUntilLand)*scrollSpeed,d.h);
+                        //         let grd = ctx.createLinearGradient(d.x,d.y,d.x - 0.1*scrollSpeed,d.y);
+                        //         grd.addColorStop(0, fill.active);
+                        //         grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
+                        //         ctx.fillStyle = grd;
+                        //         //ctx.fillStyle = fill.inactive;
+                        //         ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,timeUntilLand*scrollSpeed,d.h);                      
+                        //     }else {
+                        //         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        //         ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
+                        //     }
+                        // }
 
-                                let grd = ctx.createLinearGradient(d.x,d.y,d.x - 0.1*scrollSpeed,d.y);
-                                grd.addColorStop(0, fill.active);
-                                grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
-                                ctx.fillStyle = grd;
-                                //ctx.fillStyle = fill.inactive;
-                                ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,timeUntilLand*scrollSpeed,d.h);                      
-                            }else {
-                                ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                                ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
-                            }
+                        if (-256 < d.x-timeUntilLand*scrollSpeed + d.w*scrollSpeed && -timeUntilLand*scrollSpeed < canvas.width/2 + 256){
+                            let grd = ctx.createLinearGradient(d.x - 0.1*scrollSpeed,d.y,d.x + canvas.width/2,d.y);
+                            let grdLength = canvas.width/2 + 0.1*scrollSpeed;
+                            grd.addColorStop(0, `rgba(128,128,128,${inactiveOpacity})`);
+                            grd.addColorStop(0.1*scrollSpeed/grdLength, `rgba(128,128,128,1)`);
+                            grd.addColorStop((canvas.width/2)/grdLength,`rgba(128,128,128,1)`);
+                            grd.addColorStop(1,`rgba(128,128,128,0)`);
+
+                            ctx.fillStyle = grd;
+                            ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
                         }
                         break;
                     case 5:
@@ -786,25 +888,38 @@ function redrawCanvas(){
                         }
                         break;
                     case 7:
-                        if (timeUntilLand <= 0) {
-                            ctx.fillStyle = fill.active;
-                            ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
-                        } else {
-                            if ((d.w+timeUntilLand)*scrollSpeed <= 0){
-                                ctx.fillStyle = fill.active;
-                                ctx.fillRect(d.x,d.y,(d.w+timeUntilLand)*scrollSpeed,d.h);
+                        // if (timeUntilLand <= 0) {
+                        //     ctx.fillStyle = fill.active;
+                        //     ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
+                        // } else {
+                        //     if ((d.w+timeUntilLand)*scrollSpeed <= 0){
+                        //         ctx.fillStyle = fill.active;
+                        //         ctx.fillRect(d.x,d.y,(d.w+timeUntilLand)*scrollSpeed,d.h);
 
-                                let grd = ctx.createLinearGradient(d.x,d.y,d.x + 0.1*scrollSpeed,d.y);
-                                grd.addColorStop(0, fill.active);
-                                grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
-                                ctx.fillStyle = grd;
-                                //ctx.fillStyle = fill.inactive;
-                                ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,-timeUntilLand*scrollSpeed,d.h);                 
-                            }else {
-                                ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                                ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
-                            }
+                        //         let grd = ctx.createLinearGradient(d.x,d.y,d.x + 0.1*scrollSpeed,d.y);
+                        //         grd.addColorStop(0, fill.active);
+                        //         grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
+                        //         ctx.fillStyle = grd;
+                        //         //ctx.fillStyle = fill.inactive;
+                        //         ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,-timeUntilLand*scrollSpeed,d.h);                 
+                        //     }else {
+                        //         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        //         ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
+                        //     }
+                        // }
+
+                        if (d.x+timeUntilLand*scrollSpeed < canvas.width - d.w*scrollSpeed) {
+                            let grd = ctx.createLinearGradient(d.x + 0.1*scrollSpeed,d.y,d.x - canvas.width/2,d.y);
+                            let grdLength = canvas.width/2 + 0.1*scrollSpeed;
+                            grd.addColorStop(0, `rgba(128,128,128,${inactiveOpacity})`);
+                            grd.addColorStop(0.1*scrollSpeed/grdLength, `rgba(128,128,128,1)`);
+                            grd.addColorStop((canvas.width/2)/grdLength,`rgba(128,128,128,1)`);
+                            grd.addColorStop(1,`rgba(128,128,128,0)`);
+
+                            ctx.fillStyle = grd;
+                            ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
                         }
+
                         break;
                     
                     default:
@@ -859,6 +974,22 @@ function fireExplosion(cell){
             }, 33);
         }, 33);
     }, 33);
+}
+
+function checkBackLights(){
+    for (const r of backLights) {
+        for (const c of r) {
+            let op = 0;
+            if (c.times.length > 0) {
+                for (const i of c.times) {
+                    if (i.time - 120/BPM <= audio.currentTime && audio.currentTime <= i.time) {
+                        op++;
+                    }
+                }
+            }
+            c.img.style.opacity = `${op}`;
+        }
+    }
 }
                         
 function animate(){
@@ -976,15 +1107,16 @@ function deleteSelectedEffects(){
     for (let i = 0; i < eId; i++){
         if (flyingEffects[i]){
             if (flyingEffects[i].time <= audio.currentTime 
-            && flyingEffects[i].time + flyingEffects[i].duration >= audio.currentTime){
-                indsToRevert.push({"direction":flyingEffects[i].direction,"target":flyingEffects[i].target})
-                flyingEffects[i] = null;
+            && audio.currentTime <= flyingEffects[i].time + flyingEffects[i].duration){
+                for (let s of selectedEffects){
+                    //console.log(flyingEffects[i]);
+                    if (flyingEffects[i] && s == flyingEffects[i].target){
+                        indsToRevert.push({"direction":flyingEffects[i].direction,"target":flyingEffects[i].target})
+                        flyingEffects[i] = null;
+                    }
+                }
             }
         }
-    }
-
-    for (let e of selectedEffects){
-        document.getElementById(`b${e}`).style.opacity = 0;
     }
     for (let e of indsToRevert){
         let inds = e.target.split("");
@@ -996,6 +1128,9 @@ function deleteSelectedEffects(){
         }
     }
     updatePositions();
+    for (let e of selectedEffects){
+        document.getElementById(`b${e}`).style.opacity = 0;
+    }
     selectedEffects = [];
 }
 
@@ -1048,7 +1183,6 @@ function selectAllNotes(){
         }
         updatePositions();
     } else {
-
         for (let i = 0; i < 3; i++){
             for (let j = 0; j < 5; j++){
                 setSelectedEffects(`${i}${j}`)
@@ -1082,4 +1216,3 @@ function stopShowcase(){
         stopAudio();
     }
 }
-

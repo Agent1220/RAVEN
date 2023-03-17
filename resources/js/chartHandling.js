@@ -41,6 +41,12 @@ function chartLoading(data){
     chartHead = chartFile.head;
     //console.log("loaded chart head");
 
+    document.getElementById("setSongName").value = chartMetadata.songName;
+    document.getElementById("setSongArtist").value = chartMetadata.artist;
+    document.getElementById("setGenre").value = chartMetadata.genre;
+    document.getElementById("setScale").value = chartMetadata.scale;
+    document.getElementById("setCharter").value = chartMetadata.charter;
+
     //minSec = convertToMinSec(chartHead.length);
     timeText.innerHTML = `0:00 / ${minSec}`;
     setSnapping();
@@ -68,6 +74,7 @@ function chartLoading(data){
 
 function loadChartNotes(inputNotes){
     if (inputNotes.length){
+        noteLandingEffect = false;
         chartNotes = [];
         cId = 0;
         flyingNotes = [];
@@ -121,6 +128,8 @@ function loadChartNotes(inputNotes){
                 }
             }
         }
+
+        noteLandingEffect = true;
         // console.log("created long notes");
 
         // console.log("loaded notes");
@@ -276,6 +285,7 @@ function switchMode(){
         document.getElementById("switchMode").innerHTML = "Mode: effect";
 
         document.getElementById("eSettings").style.display = "";
+        document.getElementById("noteSettings").style.display = "none";
         dirC.style.display = "none";
         eDirC.style.display = "flex";
     } else {
@@ -283,6 +293,7 @@ function switchMode(){
         document.getElementById("switchMode").innerHTML = "Mode: note";
 
         document.getElementById("eSettings").style.display = "none";
+        document.getElementById("noteSettings").style.display = "";
         dirC.style.display = "flex";
         eDirC.style.display = "none";
     }

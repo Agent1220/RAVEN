@@ -56,6 +56,7 @@ class Chart{
 
 //FUNCTIONS, VARIABLES
 var ctrlPressed = false;
+var altPressed = false;
 
 //this just makes sure none of the images are draggable
 let alIm = document.querySelectorAll("img");
