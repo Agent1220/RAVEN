@@ -28,6 +28,7 @@ var checkOffset = {"vertical":{"x":4,"y":118},
 var gridPositions = [];
 var effectImages = [{"v":"doc", "h":"doc"}];
 var explosions = [];
+var backLights = [];
                    
 var topControlsElement = document.getElementById("topControls");
 var dirC = document.getElementById("dirChanger");
@@ -79,10 +80,13 @@ function getCells(){
 
 function getEffectImages(){
     effectImages = [];
+    backLights = [];
+
     let gpi = 3;
     while (gpi--) {
         let gpj = 5;
         let row = [];
+        let grow = [];
         while (gpj--) {
             let target = {
                "v":document.getElementById(`v${gpi}${gpj}`),
@@ -92,10 +96,20 @@ function getEffectImages(){
             document.getElementById(`v${gpi}${gpj}`).style.opacity = "0";
             document.getElementById(`h${gpi}${gpj}`).style.opacity = "0";
             document.getElementById(`b${gpi}${gpj}`).style.opacity = "0";
+
             
             row.unshift(target);
+            
+            document.getElementById(`g${gpi}${gpj}`).style.opacity = "0";
+            let grad = {
+                "img": document.getElementById(`g${gpi}${gpj}`),
+                "times":[] // time, by
+            };
+
+            grow.unshift(grad);
         }
         effectImages.unshift(row);
+        backLights.unshift(grow);
     }
 }
 
@@ -301,6 +315,7 @@ function addNote(note){
 
         flyingNotes.push(pack)
         selectedNotes.push(cId);
+        backLights[inds[0]][inds[1]].times.push({"time":pack.time,"by":pack.id});
         //longNoteConnections[cId] = flyingNotes[cId].tailId; 
         cId++;
 
@@ -374,7 +389,15 @@ function updatePositions(){
                     j.fire = false;
                 }
             }
-        } else fireExplosions();
+            for (const r of backLights) {
+                for (const c of r) {
+                    c.img.style.opacity = `${0}`;
+                }
+            }
+        } else {
+            fireExplosions();
+            checkBackLights();
+        }
     }
     if (eId){
         if (audio.paused) resetEffects();
@@ -952,6 +975,22 @@ function fireExplosion(cell){
         }, 33);
     }, 33);
 }
+
+function checkBackLights(){
+    for (const r of backLights) {
+        for (const c of r) {
+            let op = 0;
+            if (c.times.length > 0) {
+                for (const i of c.times) {
+                    if (i.time - 120/BPM <= audio.currentTime && audio.currentTime <= i.time) {
+                        op++;
+                    }
+                }
+            }
+            c.img.style.opacity = `${op}`;
+        }
+    }
+}
                         
 function animate(){
     updatePositions();
@@ -1177,4 +1216,3 @@ function stopShowcase(){
         stopAudio();
     }
 }
-
