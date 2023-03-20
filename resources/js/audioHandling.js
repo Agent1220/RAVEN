@@ -242,12 +242,12 @@ function snapTime(time, snap){
     if (found) time = (time - (i-1)*step > i*step - time) 
                                 ? Math.round(i*step * 10000) * 0.0001
                                 : Math.round((i-1)*step * 10000) * 0.0001;
-    else {alert("Failed to snap time!")};
+    else {console.error("Failed to snap time!")};
 
     return time;
 }
 
-function realign(){
+function realignNoteTimes(){
     for (let n in flyingNotes){
         if (flyingNotes){
             n.time = snapTime(n.time, n.snap);
