@@ -228,6 +228,17 @@ function checkClick(event){
     }
 }
 
+function realignNotePositions(){
+    for (const n of flyingNotes) {
+        if (n) {
+            let inds = n.target.id.split("");
+            let tgt = gridPositions[inds[0]][inds[1]];
+            n.target.x = tgt.x;
+            n.target.y = tgt.y;
+        }
+    }
+}
+
 function addNote(note){
     if (note)
     {
@@ -718,6 +729,28 @@ function makeLongNote(pass){
 
     } else {
         console.log("not 2 notes");
+    }
+}
+
+function realignLNBodies(){
+    for (const c of canvasObjects) {
+        if (c) {
+            switch (c.direction) {
+                case 2:
+                case 5:
+                    c.x = flyingNotes[c.id].target.x + LNOffset.head.x;
+                    c.y = flyingNotes[c.id].target.y + LNOffset.head.y;
+                    break;
+                case 3:
+                case 7:
+                    c.x = flyingNotes[c.id].target.x + LNOffset.tail.x;
+                    c.y = flyingNotes[c.id].target.y + LNOffset.tail.y;
+                    break;
+            
+                default:
+                    break;
+            }
+        }
     }
 }
 

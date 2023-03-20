@@ -54,7 +54,6 @@ class Chart{
     }
 }
 
-//FUNCTIONS, VARIABLES
 var ctrlPressed = false;
 var altPressed = false;
 
@@ -73,15 +72,27 @@ window.onload = () => {
     document.getElementById("body").setAttribute("onresize","calculateGridPositions()")
     document.getElementById("eDir").style.display = "none";
     document.getElementById("eSettings").style.display = "none";
+
+    setCanvasSize();
     
+    setTimeout(calculateGridPositions, 1000);
+}
+
+function setCanvasSize(){
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
-
-    setTimeout(calculateGridPositions, 1000);
 }
 
 function getMousePos(event){
     return {x:event.clientX, y:event.clientY};
+}
+
+function fixAlignments(){
+    setCanvasSize();
+    calculateGridPositions();
+    realignNotePositions();
+    realignLNBodies();
+    updatePositions();
 }
 
 //NATIVE API
@@ -93,6 +104,7 @@ async function toggleFullscreen(){
     } else {
         await Neutralino.window.setFullScreen();
     }
+    fixAlignments();
 }
 
 //DO NOT DELETE THIS OR THE WINDOW WON'T CLOSE WITH THE CLOSE BUTTON
