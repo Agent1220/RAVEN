@@ -1126,6 +1126,10 @@ function deleteSelectedNotes(){
                 revertNote(flyingNotes[s]);
                 revertNote(flyingNotes[flyingNotes[s].tailId]);
             }
+
+            let ids = flyingNotes[s].target.id.split("");
+            backLights[ids[0]][ids[1]].times.splice(backLights[ids[0]][ids[1]].times.findIndex((item) => {return item.by == s}), 1);
+
             flyingNotes[s] = null;
         }
         selectedNotes = [];
