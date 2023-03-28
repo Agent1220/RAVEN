@@ -130,6 +130,7 @@ function loadChartNotes(inputNotes){
         }
 
         noteLandingEffect = true;
+        checkPairs();
         // console.log("created long notes");
 
         // console.log("loaded notes");

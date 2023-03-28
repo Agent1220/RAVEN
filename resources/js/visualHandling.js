@@ -45,7 +45,11 @@ var ctx = canvas.getContext("2d");
 ctx.fillStyle = "rgba(128,128,128,1)";
 ctx.strokeStyle = "rgba(128,128,128,1)";
 var inactiveOpacity = 0.1;
-var fill = {"active":"rgba(128,128,128,1)","inactive":`rgba(128,128,128,${inactiveOpacity})`};
+var noteColours = {"primary":{"r":128, "g":128, "b":128, "a":1},
+                   "secondary":{"r":128, "g":200, "b":200, "a":1}};
+// var fill = {"active":`rgba(${noteColours.r},${noteColours.g},${noteColours.b},${noteColours.a})`,
+//             "inactive":`rgba(${noteColours.r},${noteColours.g},${noteColours.b},${inactiveOpacity})`};
+
 
 var noteMode = true;
 
@@ -140,6 +144,40 @@ function toggleMetadataMenu(){
 
     metaDiv.style.display = (metaDiv.style.display) ? "" : "none";
     //metaDiv.style.display = setTo;
+}
+
+function setNoteColours(act){
+    let colourValues = {"r":document.getElementById("redValue").value,
+                        "g":document.getElementById("greenValue").value,
+                        "b":document.getElementById("blueValue").value,
+                        "a":document.getElementById("alphaValue").value / 100}
+    switch (act) {
+        // case -1: // reset
+        //     for (const s of selectedNotes) {
+        //         flyingNotes[s].colour.r = noteColours.r;
+        //         flyingNotes[s].colour.g = noteColours.g;
+        //         flyingNotes[s].colour.b = noteColours.b;
+        //     }
+        //     break;
+        
+        case 1: // primary
+            noteColours.primary.r = colourValues.r;
+            noteColours.primary.g = colourValues.g;
+            noteColours.primary.b = colourValues.b;
+            noteColours.primary.a = colourValues.a;
+            break;
+        case 0: // secondary
+            noteColours.secondary.r = colourValues.r;
+            noteColours.secondary.g = colourValues.g;
+            noteColours.secondary.b = colourValues.b;
+            noteColours.secondary.a = colourValues.a;
+            break;
+    
+        default:
+            console.log("wrong note colour act");
+            break;
+    }
+    updatePositions();
 }
 
 function checkClick(event){
@@ -239,6 +277,85 @@ function realignNotePositions(){
     }
 }
 
+function noteObject(x,y,dir){
+    switch (dir){
+        case 2:
+            ctx.beginPath();
+            ctx.moveTo(8 + x, 96 + y);//topleft
+            ctx.lineTo(128 + x, 128 + y);//top mid
+            ctx.lineTo(248 + x, 96 + y);//top right
+            ctx.lineTo(248 + x, 128 + y); //bottom right
+            ctx.lineTo(128 + x, 160 + y);//bottom mid
+            ctx.lineTo(8 + x, 128 + y);//bottom left
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 3:
+            ctx.beginPath();
+            ctx.moveTo(256-96 + x,256-8 + y);//topleft
+            ctx.lineTo(256-128 + x,256-128 + y);//top mid
+            ctx.lineTo(256-96 + x,256-248 + y);//top right
+            ctx.lineTo(256-128 + x,256-248 + y); //bottom right
+            ctx.lineTo(256-160 + x,256-128 + y);//bottom mid
+            ctx.lineTo(256-128 + x,256-8 + y);//bottom left
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 5:
+            ctx.beginPath();
+            ctx.moveTo(256-8 + x, 256-96 + y);//topleft
+            ctx.lineTo(256-128 + x, 256-128 + y);//top mid
+            ctx.lineTo(256-248 + x, 256-96 + y);//top right
+            ctx.lineTo(256-248 + x, 256-128 + y); //bottom right
+            ctx.lineTo(256-128 + x, 256-160 + y);//bottom mid
+            ctx.lineTo(256-8 + x, 256-128 + y);//bottom left
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        case 7:
+            ctx.beginPath();
+            ctx.moveTo(96 + x, 8 + y);//topleft
+            ctx.lineTo(128 + x, 128 + y);//top mid
+            ctx.lineTo(96 + x, 248 + y);//top right
+            ctx.lineTo(128 + x, 248 + y); //bottom right
+            ctx.lineTo(160 + x, 128 + y);//bottom mid
+            ctx.lineTo(128 + x, 8 + y);//bottom left
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            break;
+        default:
+            console.error("direction machine broke (noteObject)");
+    }
+}
+
+function checkPairs(){
+    for (let i = 0; i < flyingNotes.length; i++) {
+        if (flyingNotes[i] && flyingNotes[i].tail == false) {
+            flyingNotes[i].primary = true;
+            let found = false;
+            for (let j = 0; j < flyingNotes.length; j++){
+                if (flyingNotes[j] && j != i) {
+                    if (flyingNotes[i].time == flyingNotes[j].time) {
+                        if (flyingNotes[j].tail == false) {
+                            found = true;
+                        }
+                    } 
+                }
+            }
+            if (found){
+                flyingNotes[i].primary = false;
+                if (flyingNotes[flyingNotes[i].tailId]) flyingNotes[flyingNotes[i].tailId].primary = false;
+            }
+            
+        }
+    }
+    updatePositions();
+}
+
 function addNote(note){
     if (note)
     {
@@ -257,74 +374,16 @@ function addNote(note){
             "direction":note.direction,
             "target":{"x":target.x,"y":target.y,"id":note.cell},
             "tailId":note.tailId,
+            "tail":false,
             "selected":true,
-            "snap":note.snap
-        }
-        
-        switch (note.direction){
-            case 2:
-                pack.draw = (x,y) => {
-                    ctx.beginPath();
-                    ctx.moveTo(8 + x, 96 + y);//topleft
-                    ctx.lineTo(128 + x, 128 + y);//top mid
-                    ctx.lineTo(248 + x, 96 + y);//top right
-                    ctx.lineTo(248 + x, 128 + y); //bottom right
-                    ctx.lineTo(128 + x, 160 + y);//bottom mid
-                    ctx.lineTo(8 + x, 128 + y);//bottom left
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                break;
-            case 3:
-                pack.draw = (x,y) => {
-                    ctx.beginPath();
-                    ctx.moveTo(256-96 + x,256-8 + y);//topleft
-                    ctx.lineTo(256-128 + x,256-128 + y);//top mid
-                    ctx.lineTo(256-96 + x,256-248 + y);//top right
-                    ctx.lineTo(256-128 + x,256-248 + y); //bottom right
-                    ctx.lineTo(256-160 + x,256-128 + y);//bottom mid
-                    ctx.lineTo(256-128 + x,256-8 + y);//bottom left
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                break;
-            case 5:
-                pack.draw = (x,y) => {
-                    ctx.beginPath();
-                    ctx.moveTo(256-8 + x, 256-96 + y);//topleft
-                    ctx.lineTo(256-128 + x, 256-128 + y);//top mid
-                    ctx.lineTo(256-248 + x, 256-96 + y);//top right
-                    ctx.lineTo(256-248 + x, 256-128 + y); //bottom right
-                    ctx.lineTo(256-128 + x, 256-160 + y);//bottom mid
-                    ctx.lineTo(256-8 + x, 256-128 + y);//bottom left
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-               break;
-            case 7:
-                pack.draw = (x,y) => {
-                    ctx.beginPath();
-                    ctx.moveTo(96 + x, 8 + y);//topleft
-                    ctx.lineTo(128 + x, 128 + y);//top mid
-                    ctx.lineTo(96 + x, 248 + y);//top right
-                    ctx.lineTo(128 + x, 248 + y); //bottom right
-                    ctx.lineTo(160 + x, 128 + y);//bottom mid
-                    ctx.lineTo(128 + x, 8 + y);//bottom left
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                break;
+            "snap":note.snap,
+            "primary": true
+        };
+        pack.draw = (x,y) => noteObject(x,y,note.direction);
 
-            default:
-                console.log("direction broke while creating note");
-                break;
-        }
 
-        flyingNotes.push(pack)
+
+        flyingNotes.push(pack);
         selectedNotes.push(cId);
         backLights[inds[0]][inds[1]].times.push({"time":pack.time,"by":pack.id});
         //longNoteConnections[cId] = flyingNotes[cId].tailId; 
@@ -342,20 +401,20 @@ function addNote(note){
                 flyingEffects.push(ePack);
                 eId++;
 
-            ePack = {"time":snapTime(audio.currentTime + (120 / BPM) ,2),
-                            "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
-                            "duration":1,
-                            "target":`${note.cell}`,
-                            "opacity1": 1,
-                            "opacity2": 0,
-                            "id":`e${eId}`,
-                            "snap":2};
-                flyingEffects.push(ePack);
-                eId++;
+            // ePack = {"time":snapTime(audio.currentTime + (120 / BPM) ,2),
+            //                 "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+            //                 "duration":1,
+            //                 "target":`${note.cell}`,
+            //                 "opacity1": 1,
+            //                 "opacity2": 0,
+            //                 "id":`e${eId}`,
+            //                 "snap":2};
+            //     flyingEffects.push(ePack);
+            //     eId++;
         }
         
         //setSelectedNotes(flyingNotes[cId]);
-        updatePositions();
+        checkPairs();
     } else {
         //console.log("pushing null to notes");
         flyingNotes.push(null);
@@ -431,44 +490,47 @@ function drawNote(note){
         case 2:
             y = note.target.y + (timeUntilLand * scrollSpeed); 
             if (-256 <= y && y <= canvas.height){
-                    if (timeUntilLand <= 0.1){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                    } else {
-                        ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                        ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                    }
-                    if (!explosions[ids[0]][ids[1]].fire && -tolerance <= timeUntilLand && timeUntilLand <= tolerance){
-                        explosions[ids[0]][ids[1]].fire = true;
-                    }
-                    // ctx.fillStyle = "rgba(128,128,128,1)";
-                    //ctx.strokeStyle = `rgba(255,255,255,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                    
-                    // let grd = ctx.createLinearGradient(note.target.x,note.target.y,note.target.x,note.target.y - 0.2*scrollSpeed);
-                    // grd.addColorStop(0, fill.active);
-                    // grd.addColorStop(1, fill.inactive);
-                    // ctx.fillStyle = grd;
-                    // ctx.strokeStyle = grd;
-                    note.draw(note.target.x, y);
+                let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
+                                          : {"r": noteColours.secondary.r,"g": noteColours.secondary.g,"b": noteColours.secondary.b,"a": noteColours.secondary.a};
 
-                    if (note.selected){
-                        ctx.strokeRect(8 + note.target.x, 96 + y,240, 64);
-                    }
-               }
+                if (timeUntilLand <= 0.1){
+                    let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a - (timeUntilLand * (rgba.a - inactiveOpacity))/ 0.1})`;
+                    ctx.strokeStyle = fillStroke;
+                    ctx.fillStyle = fillStroke;
+                } else {
+                    let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${inactiveOpacity})`;
+                    ctx.strokeStyle = fillStroke;
+                    ctx.fillStyle = fillStroke;
+                }
+                if (!explosions[ids[0]][ids[1]].fire && -tolerance <= timeUntilLand && timeUntilLand <= tolerance){
+                    explosions[ids[0]][ids[1]].fire = true;
+                }
+                note.draw(note.target.x, y);
+
+                if (note.selected){
+                    ctx.strokeStyle = `rgba(255,255,255,1)`;
+                    ctx.strokeRect(8 + note.target.x, 96 + y,240, 64);
+                }
+            }
             break;
         case 3:
             x = note.target.x - (timeUntilLand * scrollSpeed); 
             if (-256 <= x && x <= note.target.x + canvas.width/2){
+                let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
+                                          : {"r": noteColours.secondary.r,"g": noteColours.secondary.g,"b": noteColours.secondary.b,"a": noteColours.secondary.a};
                 let fadeinTreshold = note.target.x + canvas.width/2 - scrollSpeed*0.1;
                     if (fadeinTreshold < x){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a - (x - fadeinTreshold)/(scrollSpeed*0.1)})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     } else if (timeUntilLand <= 0.1){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a - (timeUntilLand * (rgba.a - inactiveOpacity))/ 0.1})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     } else {
-                        ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                        ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${inactiveOpacity})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     }
                     if (!explosions[ids[0]][ids[1]].fire && -tolerance <= timeUntilLand && timeUntilLand <= tolerance){
                         explosions[ids[0]][ids[1]].fire = true;
@@ -479,6 +541,7 @@ function drawNote(note){
                     note.draw(x,note.target.y);
 
                     if (note.selected){
+                        ctx.strokeStyle = `rgba(255,255,255,1)`;
                         ctx.strokeRect(256-96 + x,256-8 + note.target.y,-64,-240);
                     }
                }
@@ -486,12 +549,16 @@ function drawNote(note){
         case 5:
             y = note.target.y - (timeUntilLand * scrollSpeed); 
             if (-256 <= y && y <= canvas.height){
+                let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
+                                          : {"r": noteColours.secondary.r,"g": noteColours.secondary.g,"b": noteColours.secondary.b,"a": noteColours.secondary.a};
                     if (timeUntilLand <= 0.1){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a - (timeUntilLand * (rgba.a - inactiveOpacity))/ 0.1})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     } else {
-                        ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                        ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${inactiveOpacity})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     }
                     if (!explosions[ids[0]][ids[1]].fire && -tolerance <= timeUntilLand && timeUntilLand <= tolerance){
                         explosions[ids[0]][ids[1]].fire = true;
@@ -502,6 +569,7 @@ function drawNote(note){
                     note.draw(note.target.x, y);
 
                     if (note.selected){
+                        ctx.strokeStyle = `rgba(255,255,255,1)`;
                         ctx.strokeRect(256-8 + note.target.x, 256-96 + y,-240,-64);
                     }
                }
@@ -509,18 +577,23 @@ function drawNote(note){
         case 7:
             x = note.target.x + (timeUntilLand * scrollSpeed); 
             if (note.target.x - canvas.width/2 <= x && x <= canvas.width){
+                let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
+                                          : {"r": noteColours.secondary.r,"g": noteColours.secondary.g,"b": noteColours.secondary.b,"a": noteColours.secondary.a};
                 let fadeinTreshold = note.target.x - canvas.width/2 + scrollSpeed*0.1;
                     if (fadeinTreshold > x){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`; 
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a - (-x + fadeinTreshold)/(scrollSpeed*0.1)})`
+                        ctx.strokeStyle = fillStroke; 
+                        ctx.fillStyle = fillStroke;
                     } 
                     else if (timeUntilLand <= 0.1){
-                        ctx.strokeStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                        ctx.fillStyle = `rgba(128,128,128,${1 - (timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a - (timeUntilLand * (rgba.a - inactiveOpacity))/ 0.1})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     } 
                     else {
-                        ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                        ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                        let fillStroke = `rgba(${rgba.r},${rgba.g},${rgba.b},${inactiveOpacity})`;
+                        ctx.strokeStyle = fillStroke;
+                        ctx.fillStyle = fillStroke;
                     }
                     if (!explosions[ids[0]][ids[1]].fire && -tolerance <= timeUntilLand && timeUntilLand <= tolerance){
                         explosions[ids[0]][ids[1]].fire = true;
@@ -531,6 +604,7 @@ function drawNote(note){
                     note.draw(x,note.target.y);
 
                     if (note.selected){
+                        ctx.strokeStyle = `rgba(255,255,255,1)`;
                         ctx.strokeRect(96 + x, 8 + note.target.y, 64,240);
                     }
                }
@@ -765,6 +839,7 @@ function tileLNBody(head, tail){
                                          "h":-tilingLength,
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
+                                        "tail":tail.id,
                                         "direction":2,
                                         "snap":head.snap});
             cnvC++;
@@ -777,6 +852,7 @@ function tileLNBody(head, tail){
                                          "h":240,
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
+                                        "tail":tail.id,
                                         "direction":3,
                                         "snap":head.snap});
             cnvC++;
@@ -789,6 +865,7 @@ function tileLNBody(head, tail){
                                          "h":tilingLength,
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
+                                        "tail":tail.id,
                                         "direction":5,
                                         "snap":head.snap});
             cnvC++;
@@ -801,6 +878,7 @@ function tileLNBody(head, tail){
                                          "h":240,
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
+                                        "tail":tail.id,
                                         "direction":7,
                                         "snap":head.snap});
             cnvC++;
@@ -808,7 +886,9 @@ function tileLNBody(head, tail){
         default:
             return console.error("longnope");
     }
-    
+    tail.tail = true;
+    tail.primary = head.primary;
+    checkPairs();
 }
 
 function updateEffect(effect){ 
@@ -833,67 +913,60 @@ function redrawCanvas(){
         for (d of canvasObjects){
             if (d != null){
                 let timeUntilLand = audio.currentTime - d.time;
-                // if (-timeUntilLand <= 0.1){
-                //     ctx.strokeStyle = `rgba(128,128,128,${1 - (-timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                //     ctx.fillStyle = `rgba(128,128,128,${1 - (-timeUntilLand * (1 - inactiveOpacity))/ 0.1})`;
-                // } else {
-                //     ctx.strokeStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                //     ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                // }
                 switch (d.direction) {
                     case 2:
                         if (timeUntilLand <= 0) {
-                            ctx.fillStyle = fill.active;
+                            let rgba = (flyingNotes[d.id].primary) ? `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`
+                                                                   : `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
+                            ctx.fillStyle = rgba;
                             ctx.fillRect(d.x,d.y+timeUntilLand*scrollSpeed,d.w,d.h*scrollSpeed);                  
                         } else {
                             if ((d.h+timeUntilLand)*scrollSpeed <= 0){
-                                ctx.fillStyle = fill.active;
+                                let rgbi, rgba;
+                                
+                                if (flyingNotes[d.id].primary) {
+                                    rgba = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`;
+                                    rgbi = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${inactiveOpacity})`;
+                                } else {
+                                    rgba = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
+                                    rgbi = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${inactiveOpacity})`;
+                                }
+                                ctx.fillStyle = rgba;
                                 ctx.fillRect(d.x,d.y,d.w,(d.h+timeUntilLand)*scrollSpeed);
 
                                 let grd = ctx.createLinearGradient(d.x,d.y,d.x,d.y + 0.1*scrollSpeed);
-                                grd.addColorStop(0, fill.active);
-                                grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
+                                grd.addColorStop(0, rgba);
+                                grd.addColorStop(1, rgbi);
                                 ctx.fillStyle = grd;
-                                //ctx.fillStyle = fill.inactive;
+                                
                                 ctx.fillRect(d.x,d.y+timeUntilLand*scrollSpeed,d.w,-timeUntilLand*scrollSpeed);                  
                             }else {
-                                ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                                let rgbi = (flyingNotes[d.id].primary) ? `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${inactiveOpacity})`
+                                                                       : `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${inactiveOpacity})`;
+                                ctx.fillStyle = rgbi;
                                 ctx.fillRect(d.x,d.y+timeUntilLand*scrollSpeed,d.w,d.h*scrollSpeed);                      
                             }
                         }
                         break;
-                    case 3:
-                        // if (timeUntilLand <= 0) {
-                        //     let grd = ctx.createLinearGradient(d.x + canvas.width/2,d.y,d.x + canvas.width/2 - 0.1*scrollSpeed,d.y);
-                        //     grd.addColorStop(0, `rgba(128,128,128,0)`);
-                        //     grd.addColorStop(1, `rgba(128,128,128,1)`);
-                            
-                        // //ctx.fillStyle = fill.active;
-                        //     ctx.fillStyle = grd;
-                        //     ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
-                        // } else {
-                        //     if ((-d.w+timeUntilLand)*scrollSpeed <= 0){
-                        //         ctx.fillStyle = fill.active;
-                        //         ctx.fillRect(d.x,d.y,(d.w-timeUntilLand)*scrollSpeed,d.h);
-                        //         let grd = ctx.createLinearGradient(d.x,d.y,d.x - 0.1*scrollSpeed,d.y);
-                        //         grd.addColorStop(0, fill.active);
-                        //         grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
-                        //         ctx.fillStyle = grd;
-                        //         //ctx.fillStyle = fill.inactive;
-                        //         ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,timeUntilLand*scrollSpeed,d.h);                      
-                        //     }else {
-                        //         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                        //         ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
-                        //     }
-                        // }
-
+                    case 3: 
                         if (-256 < d.x-timeUntilLand*scrollSpeed + d.w*scrollSpeed && -timeUntilLand*scrollSpeed < canvas.width/2 + 256){
+                            let rgba, rgbi, rgb0;
+                            if (flyingNotes[d.id].primary) {
+                                rgba = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`;
+                                rgbi = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${inactiveOpacity})`;
+                                rgb0 = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${0})`;
+                            } else {
+                                rgba = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
+                                rgbi = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${inactiveOpacity})`;
+                                rgb0 = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${0})`;
+                            }
+
                             let grd = ctx.createLinearGradient(d.x - 0.1*scrollSpeed,d.y,d.x + canvas.width/2,d.y);
                             let grdLength = canvas.width/2 + 0.1*scrollSpeed;
-                            grd.addColorStop(0, `rgba(128,128,128,${inactiveOpacity})`);
-                            grd.addColorStop(0.1*scrollSpeed/grdLength, `rgba(128,128,128,1)`);
-                            grd.addColorStop((canvas.width/2)/grdLength,`rgba(128,128,128,1)`);
-                            grd.addColorStop(1,`rgba(128,128,128,0)`);
+                            grd.addColorStop(0, rgbi);
+                            grd.addColorStop(0.1*scrollSpeed/grdLength, rgba);
+                            grd.addColorStop((canvas.width/2)/grdLength,rgba);
+                            grd.addColorStop(1,rgb0);
 
                             ctx.fillStyle = grd;
                             ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
@@ -901,58 +974,61 @@ function redrawCanvas(){
                         break;
                     case 5:
                         if (timeUntilLand <= 0) {
-                            ctx.fillStyle = fill.active;
+                            let rgba = (flyingNotes[d.id].primary) ? `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`
+                                                                   : `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
+                            ctx.fillStyle = rgba;
                             ctx.fillRect(d.x,d.y-timeUntilLand*scrollSpeed,d.w,d.h*scrollSpeed);                  
                         } else {
                             if ((-d.h+timeUntilLand)*scrollSpeed <= 0){
-                                ctx.fillStyle = fill.active;
+                                let rgbi, rgba;
+                                
+                                if (flyingNotes[d.id].primary) {
+                                    rgba = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`;
+                                    rgbi = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${inactiveOpacity})`;
+                                } else {
+                                    rgba = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
+                                    rgbi = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${inactiveOpacity})`;
+                                }
+                                ctx.fillStyle = rgba;
                                 ctx.fillRect(d.x,d.y,d.w,(d.h-timeUntilLand)*scrollSpeed);
 
                                 let grd = ctx.createLinearGradient(d.x,d.y,d.x,d.y - 0.1*scrollSpeed);
-                                grd.addColorStop(0, fill.active);
-                                grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
+                                grd.addColorStop(0, rgba);
+                                grd.addColorStop(1, rgbi);
                                 ctx.fillStyle = grd;
-                                //ctx.fillStyle = fill.inactive;
+                                
                                 ctx.fillRect(d.x,d.y-timeUntilLand*scrollSpeed,d.w,timeUntilLand*scrollSpeed);                  
                             }else {
-                                ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
+                                let rgbi = (flyingNotes[d.id].primary) ? `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${inactiveOpacity})`
+                                                                       : `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${inactiveOpacity})`;
+                                ctx.fillStyle = rgbi;
                                 ctx.fillRect(d.x,d.y-timeUntilLand*scrollSpeed,d.w,d.h*scrollSpeed);                      
                             }
                         }
                         break;
                     case 7:
-                        // if (timeUntilLand <= 0) {
-                        //     ctx.fillStyle = fill.active;
-                        //     ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                  
-                        // } else {
-                        //     if ((d.w+timeUntilLand)*scrollSpeed <= 0){
-                        //         ctx.fillStyle = fill.active;
-                        //         ctx.fillRect(d.x,d.y,(d.w+timeUntilLand)*scrollSpeed,d.h);
-
-                        //         let grd = ctx.createLinearGradient(d.x,d.y,d.x + 0.1*scrollSpeed,d.y);
-                        //         grd.addColorStop(0, fill.active);
-                        //         grd.addColorStop(1, `rgba(128,128,128,${inactiveOpacity})`);
-                        //         ctx.fillStyle = grd;
-                        //         //ctx.fillStyle = fill.inactive;
-                        //         ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,-timeUntilLand*scrollSpeed,d.h);                 
-                        //     }else {
-                        //         ctx.fillStyle = `rgba(128,128,128,${inactiveOpacity})`;
-                        //         ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);                      
-                        //     }
-                        // }
-
                         if (d.x+timeUntilLand*scrollSpeed < canvas.width - d.w*scrollSpeed) {
+                            let rgba, rgbi, rgb0;
+                            if (flyingNotes[d.id].primary) {
+                                rgba = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`;
+                                rgbi = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${inactiveOpacity})`;
+                                rgb0 = `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${0})`;
+                            } else {
+                                rgba = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
+                                rgbi = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${inactiveOpacity})`;
+                                rgb0 = `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${0})`;
+                            }
+
                             let grd = ctx.createLinearGradient(d.x + 0.1*scrollSpeed,d.y,d.x - canvas.width/2,d.y);
                             let grdLength = canvas.width/2 + 0.1*scrollSpeed;
-                            grd.addColorStop(0, `rgba(128,128,128,${inactiveOpacity})`);
-                            grd.addColorStop(0.1*scrollSpeed/grdLength, `rgba(128,128,128,1)`);
-                            grd.addColorStop((canvas.width/2)/grdLength,`rgba(128,128,128,1)`);
-                            grd.addColorStop(1,`rgba(128,128,128,0)`);
+                            grd.addColorStop(0, rgbi);
+                            grd.addColorStop(0.1*scrollSpeed/grdLength, rgba);
+                            grd.addColorStop((canvas.width/2)/grdLength,rgba);
+                            grd.addColorStop(1,rgb0);
 
                             ctx.fillStyle = grd;
                             ctx.fillRect(d.x+timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
                         }
-
                         break;
                     
                     default:
@@ -1107,7 +1183,7 @@ function revertNote(note){
                 //console.log("found it!");
             }
         }
-
+        note.tail = false;
         updatePositions();
     }
 }
@@ -1126,6 +1202,10 @@ function deleteSelectedNotes(){
                 revertNote(flyingNotes[s]);
                 revertNote(flyingNotes[flyingNotes[s].tailId]);
             }
+
+            let ids = flyingNotes[s].target.id.split("");
+            backLights[ids[0]][ids[1]].times.splice(backLights[ids[0]][ids[1]].times.findIndex((item) => {return item.by == s}));
+
             flyingNotes[s] = null;
         }
         selectedNotes = [];
