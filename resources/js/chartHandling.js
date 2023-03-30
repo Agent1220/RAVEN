@@ -1,6 +1,8 @@
 var currDirection = 2;
 var eDir = 2;
 
+var gridDimensions = {"rows":3,"cols":5}
+var dreaming = true;
 
 var chartHead = new ChartHead(120,180,0,0,0,"5x3");
 var chartMetadata = new ChartMetadata("Song Name","Artist","Genre",`${chartHead.startingBpm}BPM`,"Charter","DREAM","1"); 
@@ -26,6 +28,7 @@ document.getElementById("chartInput").addEventListener("change", function() {
             .then((data) => chartLoading(data),
                   (error) => console.log(error)
             );
+    calculateGridPositions();
 });
 
 function chartLoading(data){
@@ -163,6 +166,51 @@ function loadChartEffects(inputEffects){
     } else {
         // console.log("there was nothing to load");
     }
+}
+
+function setMode() {
+    if (dreaming) {
+        dreaming = false;
+        gridDimensions.rows = 4;
+        gridDimensions.cols = 6;
+        chartHead.style = "6x4";
+        chartMetadata.style = "NIGHTMARE";
+
+        document.getElementById("dreamerBtn").innerText = "Mode: NGTM";
+    } else {
+        dreaming = true;
+        gridDimensions.rows = 3;
+        gridDimensions.cols = 5;
+        chartHead.style = "5x3";
+        chartMetadata.style = "DREAM";
+
+        document.getElementById("dreamerBtn").innerText = "Mode: DRM";
+    }
+    constructGrid();
+}
+
+function removeFallenNotes(){
+    for (let i = 0; i < flyingNotes.length; i++) {
+        if (flyingNotes[i]) {
+            let cells = `${flyingNotes[i].target.id.split("")}`;
+            if (Number(cells[0]) > gridDimensions.rows - 1 || Number(cells[1]) > gridDimensions.cols - 1) {
+                ctrlPressed = false;
+                selectedNotes.push(flyingNotes[i].id);
+                deleteSelectedNotes();
+            }
+        }
+    }
+
+    noteMode = false;
+    for (let i = 0; i < flyingEffects.length; i++) {
+        if (flyingEffects[i]) {
+            let cells = `${flyingEffects[i].target.split("")}`;
+            if (Number(cells[0]) > gridDimensions.rows - 1 || Number(cells[1]) > gridDimensions.cols - 1) {
+                flyingEffects[i] = null;
+            }
+        }
+    }
+    noteMode = true;
 }
 
 //METADATA MENU ##########################################################

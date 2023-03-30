@@ -57,9 +57,9 @@ var tolerance = 0.015;
 
 function calculateGridPositions(){
     gridPositions = [];
-    let gpi = 3;
+    let gpi = gridDimensions.rows;
     while (gpi--) {
-        let gpj = 5;
+        let gpj = gridDimensions.cols;
         let row = [];
         while (gpj--) {
             let target = document.getElementById(`i${gpi}${gpj}`).getBoundingClientRect();
@@ -71,9 +71,9 @@ function calculateGridPositions(){
 
 function getCells(){
     explosions = [];
-    let i = 3;
+    let i = gridDimensions.rows;
     while (i--){
-        let j = 5;
+        let j = gridDimensions.cols;
         let row = [];
         while (j--){
             row.unshift({"cell":document.getElementById(`s${i}${j}`),"fire":false});
@@ -86,9 +86,9 @@ function getEffectImages(){
     effectImages = [];
     backLights = [];
 
-    let gpi = 3;
+    let gpi = gridDimensions.rows;
     while (gpi--) {
-        let gpj = 5;
+        let gpj = gridDimensions.cols;
         let row = [];
         let grow = [];
         while (gpj--) {
@@ -97,14 +97,11 @@ function getEffectImages(){
                "h":document.getElementById(`h${gpi}${gpj}`)
             }
 
-            document.getElementById(`v${gpi}${gpj}`).style.opacity = "0";
-            document.getElementById(`h${gpi}${gpj}`).style.opacity = "0";
-            document.getElementById(`b${gpi}${gpj}`).style.opacity = "0";
+            imgOpsTo0(gpi, gpj);
 
             
             row.unshift(target);
             
-            document.getElementById(`g${gpi}${gpj}`).style.opacity = "0";
             let grad = {
                 "img": document.getElementById(`g${gpi}${gpj}`),
                 "times":[] // time, by
@@ -115,6 +112,13 @@ function getEffectImages(){
         effectImages.unshift(row);
         backLights.unshift(grow);
     }
+}
+
+function imgOpsTo0(gpi, gpj){
+    document.getElementById(`v${gpi}${gpj}`).style.opacity = "0";
+    document.getElementById(`h${gpi}${gpj}`).style.opacity = "0";
+    document.getElementById(`b${gpi}${gpj}`).style.opacity = "0";
+    document.getElementById(`g${gpi}${gpj}`).style.opacity = "0";
 }
 
 function setScrollSpeed(){
@@ -242,9 +246,9 @@ function checkClick(event){
     }
 
     if (!note) {
-        let i = 3;
+        let i = gridDimensions.rows;
         while (i-- && !cell){
-            let j = 5;
+            let j = gridDimensions.cols;
             while (j-- && !cell){
                 if (gridPositions[i][j].x <= correctedCoords.x && correctedCoords.x <= gridPositions[i][j].x + 256
                  && gridPositions[i][j].y <= correctedCoords.y && correctedCoords.y <= gridPositions[i][j].y + 256){
@@ -1041,9 +1045,9 @@ function redrawCanvas(){
 }
 
 function fireExplosions(){
-    let i = 3;
+    let i = gridDimensions.rows;
     while (i--){
-        let j = 5;
+        let j = gridDimensions.cols;
         while (j--){
             if (explosions[i][j].fire){
                 explosions[i][j].fire = false;
