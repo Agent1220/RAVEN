@@ -1,4 +1,3 @@
-
 var animationId;
 
 var cId = 0; //note count
