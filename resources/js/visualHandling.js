@@ -844,7 +844,7 @@ function tileLNBody(head, tail){
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
                                         "tail":tail.id,
-                                        "direction":2,
+                                        "direction":Directions.Up,
                                         "snap":head.snap});
             cnvC++;
             break;
@@ -857,7 +857,7 @@ function tileLNBody(head, tail){
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
                                         "tail":tail.id,
-                                        "direction":3,
+                                        "direction":Directions.Right,
                                         "snap":head.snap});
             cnvC++;
             break;
@@ -870,7 +870,7 @@ function tileLNBody(head, tail){
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
                                         "tail":tail.id,
-                                        "direction":5,
+                                        "direction":Directions.Down,
                                         "snap":head.snap});
             cnvC++;
             break;
@@ -883,7 +883,7 @@ function tileLNBody(head, tail){
                                         "time":snapTime(head.time, head.snap),
                                         "id":head.id,
                                         "tail":tail.id,
-                                        "direction":7,
+                                        "direction":Directions.Left,
                                         "snap":head.snap});
             cnvC++;
             break;
