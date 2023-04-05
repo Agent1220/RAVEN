@@ -91,7 +91,7 @@ function playPauseAudio(m){
     if (!audio.paused){
         stopAnim();
         audio.pause();
-        snapAudio();   
+        //snapAudio();   
     } else {    
         audio.currentTime;
         audio.play();
@@ -200,29 +200,60 @@ function snapAudio(){
 
 function moveNotesTime(forward){
     for (let s of selectedNotes){
-        for (let n of flyingNotes){
-            if (n){
-                if (n.id == s){
-                    let step = (forward) ? n.time + nextStep 
-                    : n.time - nextStep > 0 ?  n.time - nextStep
-                    : n.time;
-                    n.time = step;
-                    n.snap = snapping;
-                }
+        let step = (forward) ? flyingNotes[s].time + nextStep 
+                            : flyingNotes[s].time - nextStep > 0 ?  flyingNotes[s].time - nextStep
+                            : flyingNotes[s].time;
+        flyingNotes[s].time = step;
+        flyingNotes[s].snap = snapping;
 
-                for (let c of canvasObjects){
-                    if (c.id == n.id){ //if head of LN
-                        let step = (forward) ? c.time + nextStep 
-                        : c.time - nextStep > 0 ?  c.time - nextStep
-                        : c.time;
-                        c.time = step;
-                        c.snap = snapping;
-                    }
-                }
+        for (const c of canvasObjects) {
+            if (c.id == s) {
+                step = (forward) ? flyingNotes[c.tail].time + nextStep 
+                                : flyingNotes[c.tail].time - nextStep > 0 ?  flyingNotes[c.tail].time - nextStep
+                                : flyingNotes[c.tail].time;
+
+                flyingNotes[c.tail].time = step;
+                flyingNotes[c.tail].snap = snapping;
+
+                c.time = flyingNotes[c.id].time;
+                c.snap = flyingNotes[c.id].snap;
+            } else if (c.tail == s){
+                step = (forward) ? flyingNotes[c.id].time + nextStep 
+                : flyingNotes[c.id].time - nextStep > 0 ?  flyingNotes[c.id].time - nextStep
+                : flyingNotes[c.id].time;
+
+                flyingNotes[c.id].time = step;
+                flyingNotes[c.id].snap = snapping;
+
+                c.time = flyingNotes[c.id].time;
+                c.snap = flyingNotes[c.id].snap;
             }
         }
+
+        // for (let n of flyingNotes){
+        //     if (n){
+        //         if (n.id == s){
+        //             let step = (forward) ? n.time + nextStep 
+        //             : n.time - nextStep > 0 ?  n.time - nextStep
+        //             : n.time;
+        //             n.time = step;
+        //             n.snap = snapping;
+        //         }
+
+        //         for (let c of canvasObjects){
+        //             if (c.id == n.id){ //if head of LN
+        //                 let step = (forward) ? c.time + nextStep 
+        //                 : c.time - nextStep > 0 ?  c.time - nextStep
+        //                 : c.time;
+        //                 c.time = step;
+        //                 c.snap = snapping;
+        //             }
+        //         }
+        //     }
+        // }
     }
-    updatePositions();
+    checkPairs();
+    //updatePositions();
 }
 
 function snapTime(time, snap){
