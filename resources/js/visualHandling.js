@@ -353,7 +353,9 @@ function checkPairs(){
                 flyingNotes[i].primary = false;
             }
             if (flyingNotes[i].tailId !== -1){ 
-                flyingNotes[flyingNotes[i].tailId].primary = flyingNotes[i].primary;
+                if (flyingNotes[flyingNotes[i].tailId]) {
+                    flyingNotes[flyingNotes[i].tailId].primary = flyingNotes[i].primary;
+                }
             }
         }
     }
