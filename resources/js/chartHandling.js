@@ -1,5 +1,11 @@
-var currDirection = 2;
-var eDir = 2;
+const Directions = {
+    Up: 1,
+    Right: 2,
+    Down: 4,
+    Left: 8
+}
+var currDirection = Directions.Up;
+var eDir = Directions.Up;
 
 var gridDimensions = {"rows":3,"cols":5}
 var dreaming = true;
@@ -88,20 +94,20 @@ function loadChartNotes(inputNotes){
         for (let i = 0; i < inputNotes.length; i++){
             if (inputNotes[i]){
                 //longNoteConnections[i] = [];
-                if (!(inputNotes[i].direction % 2)){
-                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,2,inputNotes[i].cell,inputNotes[i].snap));
+                if (!(inputNotes[i].direction & Directions.Up)){
+                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,Direcions.Up,inputNotes[i].cell,inputNotes[i].snap));
                 //longNoteConnections[i].push(`${inputNotes[i].tailId}`);
                 }
-                if (!(inputNotes[i].direction % 3)){
-                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,3,inputNotes[i].cell,inputNotes[i].snap));
+                if (!(inputNotes[i].direction & Directions.Right)){
+                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,Directions.Right,inputNotes[i].cell,inputNotes[i].snap));
                     //longNoteConnections[i].push(`${inputNotes[i].tailId}`);
                 }
-                if (!(inputNotes[i].direction % 5)){
-                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,5,inputNotes[i].cell,inputNotes[i].snap));
+                if (!(inputNotes[i].direction & Directions.Down)){
+                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,Directions.Down,inputNotes[i].cell,inputNotes[i].snap));
                     //longNoteConnections[i].push(`${inputNotes[i].tailId}`);
                 }
-                if (!(inputNotes[i].direction % 7)){
-                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,7,inputNotes[i].cell,inputNotes[i].snap));
+                if (!(inputNotes[i].direction & Directions.Left)){
+                    chartNotes.push(new Note(inputNotes[i].time,inputNotes[i].tailId,Directions.Left,inputNotes[i].cell,inputNotes[i].snap));
                     //longNoteConnections[i].push(`${inputNotes[i].tailId}`);
                 }
             } else {
@@ -148,10 +154,10 @@ function loadChartEffects(inputEffects){
         chartEffects = [];
         let l = inputEffects.length;
         for (let i = 0; i < l; i++){
-            if (!(inputEffects[i].direction % 2)){
+            if (!(inputEffects[i].direction & Directions.Up)){
                 chartEffects.push(inputEffects[i]);
             }
-            if (!(inputEffects[i].direction % 3)){
+            if (!(inputEffects[i].direction & Directions.Right)){
                 chartEffects.push(inputEffects[i]);
             }
         }
@@ -311,21 +317,21 @@ function changeDirection(){
 
     dirC.style.transform = `rotate(${deg}deg)`;
 
-    let a = [7,2,3,5];
+    let a = [Directions.Left,Directions.Up,Directions.Right,Directions.Down];
     rotIter++;
-    rotIter %= 4;
+    rotIter %= a.length;
     currDirection = a[rotIter];
 }
 
 var eIter = 0;
 function changeEffectDirection(){
-    let a = [2,3,6];
+    let a = [Directions.Up,Directions.Right,Directions.Up|Directions.Right];
     eIter++;
-    eIter %= 3;
+    eIter %= a.length;
     eDir = a[eIter];
 
-    eDirH.style.opacity = (eDir % 2) ? "0" : "1";
-    eDirV.style.opacity = (eDir % 3) ? "0" : "1";
+    eDirH.style.opacity = (eDir & Directions.Up) ? "0" : "1";
+    eDirV.style.opacity = (eDir & Directions.Right) ? "0" : "1";
 }
 
 function switchMode(){

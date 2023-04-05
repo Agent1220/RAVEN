@@ -24,12 +24,12 @@ var noteOffset = {"x":0,"y":-19.75};
 var visOffset = {"x":4, "y":-37};
 var checkOffset = {"vertical":{"x":4,"y":118},
                    "horizontal":{"x":96,"y":20}};
-                   
+
 var gridPositions = [];
 var effectImages = [{"v":"doc", "h":"doc"}];
 var explosions = [];
 var backLights = [];
-                   
+
 var topControlsElement = document.getElementById("topControls");
 var dirC = document.getElementById("dirChanger");
 var eDirC = document.getElementById("eDir");
@@ -201,7 +201,7 @@ function checkClick(event){
                 let size;
 
                 switch (flyingNotes[i].direction) {
-                    case 2:
+                    case Directions.Up:
                         size = {"x":248,"y":64};
                         if (notePos.x <= coords.x - checkOffset.vertical.x && coords.x - checkOffset.vertical.x <= notePos.x + size.x
                             && notePos.y <= coords.y - checkOffset.vertical.y && coords.y - checkOffset.vertical.y <= notePos.y + size.y){
@@ -210,7 +210,7 @@ function checkClick(event){
                                 //console.log("found note:",note);  
                             }
                         break;
-                    case 3:
+                    case Directions.Right:
                         size = {"x":64,"y":248};
                         if (notePos.x <= coords.x - checkOffset.horizontal.x && coords.x - checkOffset.horizontal.x <= notePos.x + size.x
                             && notePos.y <= coords.y - checkOffset.horizontal.y && coords.y - checkOffset.horizontal.y <= notePos.y + size.y){
@@ -219,7 +219,7 @@ function checkClick(event){
                                 //console.log("found note:",note);  
                             }
                         break;
-                    case 5: 
+                    case Directions.Down: 
                         size = {"x":248,"y":64};
                         if (notePos.x <= coords.x - checkOffset.vertical.x && coords.x - checkOffset.vertical.x <= notePos.x + size.x
                             && notePos.y <= coords.y - checkOffset.vertical.y && coords.y - checkOffset.vertical.y <= notePos.y + size.y){
@@ -228,7 +228,7 @@ function checkClick(event){
                                 //console.log("found note:",note);  
                             }
                         break;                        
-                    case 7:
+                    case Directions.Left:
                         size = {"x":64,"y":248};
                         if (notePos.x <= coords.x - checkOffset.horizontal.x && coords.x - checkOffset.horizontal.x <= notePos.x + size.x
                             && notePos.y <= coords.y - checkOffset.horizontal.y && coords.y - checkOffset.horizontal.y <= notePos.y + size.y){
@@ -283,7 +283,7 @@ function realignNotePositions(){
 
 function noteObject(x,y,dir){
     switch (dir){
-        case 2:
+        case Directions.Up:
             ctx.beginPath();
             ctx.moveTo(8 + x, 96 + y);//topleft
             ctx.lineTo(128 + x, 128 + y);//top mid
@@ -295,7 +295,7 @@ function noteObject(x,y,dir){
             ctx.fill();
             ctx.stroke();
             break;
-        case 3:
+        case Directions.Right:
             ctx.beginPath();
             ctx.moveTo(256-96 + x,256-8 + y);//topleft
             ctx.lineTo(256-128 + x,256-128 + y);//top mid
@@ -307,7 +307,7 @@ function noteObject(x,y,dir){
             ctx.fill();
             ctx.stroke();
             break;
-        case 5:
+        case Directions.Down:
             ctx.beginPath();
             ctx.moveTo(256-8 + x, 256-96 + y);//topleft
             ctx.lineTo(256-128 + x, 256-128 + y);//top mid
@@ -319,7 +319,7 @@ function noteObject(x,y,dir){
             ctx.fill();
             ctx.stroke();
             break;
-        case 7:
+        case Directions.Left:
             ctx.beginPath();
             ctx.moveTo(96 + x, 8 + y);//topleft
             ctx.lineTo(128 + x, 128 + y);//top mid
@@ -395,7 +395,7 @@ function addNote(note){
 
         if (altPressed){
             let ePack = {"time":snapTime(audio.currentTime - (240 / BPM), 2),
-                            "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+                            "direction":(!(note.direction & Directions.Up) || !(note.direction & Directions.Down)) ? Directions.Up : Directions.Right,
                             "duration":1,
                             "target":`${note.cell}`,
                             "opacity1": 0,
@@ -406,7 +406,7 @@ function addNote(note){
                 eId++;
 
             // ePack = {"time":snapTime(audio.currentTime + (120 / BPM) ,2),
-            //                 "direction":(!(note.direction % 2) || !(note.direction % 5)) ? 2 : 3,
+            //                 "direction":(!(note.direction & Directions.Up) || !(note.direction & Directions.Down)) ? 2 : 3,
             //                 "duration":1,
             //                 "target":`${note.cell}`,
             //                 "opacity1": 1,
@@ -491,7 +491,7 @@ function drawNote(note){
     let ids = note.target.id.split("");
 
     switch (note.direction) {
-        case 2:
+        case Directions.Up:
             y = note.target.y + (timeUntilLand * scrollSpeed); 
             if (-256 <= y && y <= canvas.height){
                 let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
@@ -517,7 +517,7 @@ function drawNote(note){
                 }
             }
             break;
-        case 3:
+        case Directions.Right:
             x = note.target.x - (timeUntilLand * scrollSpeed); 
             if (-256 <= x && x <= note.target.x + canvas.width/2){
                 let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
@@ -550,7 +550,7 @@ function drawNote(note){
                     }
                }
             break;
-        case 5:
+        case Directions.Down:
             y = note.target.y - (timeUntilLand * scrollSpeed); 
             if (-256 <= y && y <= canvas.height){
                 let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
@@ -578,7 +578,7 @@ function drawNote(note){
                     }
                }
             break;
-        case 7:
+        case Directions.Left:
             x = note.target.x + (timeUntilLand * scrollSpeed); 
             if (note.target.x - canvas.width/2 <= x && x <= canvas.width){
                 let rgba = (note.primary) ? {"r": noteColours.primary.r,"g": noteColours.primary.g,"b": noteColours.primary.b,"a": noteColours.primary.a}
@@ -703,7 +703,7 @@ function makeLongNote(pass){
             deselectNotes();
 
             switch (firstNote.direction) {
-                case 2:
+                case Directions.Up:
                     firstNote.draw = (x,y) =>{
                         ctx.beginPath();
                         ctx.moveTo(248 + x, 128 + y); //bottom right
@@ -724,7 +724,7 @@ function makeLongNote(pass){
                         ctx.stroke();
                     }
                     break;
-                case 3:
+                case Directions.Right:
                     firstNote.draw = (x,y) =>{
                         ctx.beginPath();
                         ctx.moveTo(256-128 + x,256-248 + y); //bottom right
@@ -746,7 +746,7 @@ function makeLongNote(pass){
                         ctx.stroke();
                     }
                     break;
-                case 5:
+                case Directions.Down:
                     firstNote.draw = (x,y) =>{
                         ctx.beginPath();
                         ctx.moveTo(256-248 + x, 256-128 + y); //bottom right
@@ -768,7 +768,7 @@ function makeLongNote(pass){
                         ctx.stroke();
                     }
                     break;
-                case 7:
+                case Directions.Left:
                     firstNote.draw = (x,y) =>{
                         ctx.beginPath();
                         ctx.moveTo(128 + x, 248 + y); //bottom right
@@ -814,13 +814,13 @@ function realignLNBodies(){
     for (const c of canvasObjects) {
         if (c) {
             switch (c.direction) {
-                case 2:
-                case 5:
+                case Directions.Up:
+                case Directions.Down:
                     c.x = flyingNotes[c.id].target.x + LNOffset.head.x;
                     c.y = flyingNotes[c.id].target.y + LNOffset.head.y;
                     break;
-                case 3:
-                case 7:
+                case Directions.Right:
+                case Directions.Left:
                     c.x = flyingNotes[c.id].target.x + LNOffset.tail.x;
                     c.y = flyingNotes[c.id].target.y + LNOffset.tail.y;
                     break;
@@ -835,7 +835,7 @@ function realignLNBodies(){
 function tileLNBody(head, tail){
     var tilingLength = `${tail.time - head.time}`;
     switch (head.direction) {
-        case 2:
+        case Directions.Up:
             //ctx.fillRect(head.target.x+1, head.target.y + LNOffset.head.y,246,0.5-tilingLength);
             canvasObjects.push({"x":head.target.x + LNOffset.head.x, 
                                          "y":head.target.y + LNOffset.head.y, 
@@ -848,7 +848,7 @@ function tileLNBody(head, tail){
                                         "snap":head.snap});
             cnvC++;
             break;
-        case 3:
+        case Directions.Right:
             //ctx.fillRect(head.target.x + LNOffset.tail.x, head.target.y + LNOffset.tail.y,tilingLength,246);
             canvasObjects.push({"x":head.target.x + LNOffset.tail.x, 
                                          "y":head.target.y + LNOffset.tail.y, 
@@ -861,7 +861,7 @@ function tileLNBody(head, tail){
                                         "snap":head.snap});
             cnvC++;
             break;
-        case 5:
+        case Directions.Down:
             //ctx.fillRect(head.target.x+1, head.target.y + LNOffset.head.y,246,tilingLength);
             canvasObjects.push({"x":head.target.x + LNOffset.head.x, 
                                          "y":head.target.y + LNOffset.head.y, 
@@ -874,7 +874,7 @@ function tileLNBody(head, tail){
                                         "snap":head.snap});
             cnvC++;
             break;
-        case 7:
+        case Directions.Left:
             //ctx.fillRect(head.target.x + LNOffset.tail.x, head.target.y + LNOffset.tail.y,-tilingLength,246);
             canvasObjects.push({"x":head.target.x + LNOffset.tail.x, 
                                          "y":head.target.y + LNOffset.tail.y, 
@@ -900,11 +900,11 @@ function updateEffect(effect){
     let inds = effect.target.split("");
     let snap = 60 / BPM * 4 / effect.snap;
     if (-tolerance <= timeUntilFire && timeUntilFire <= (effect.time + effect.duration * snap) + tolerance){
-        if (!(effect.direction % 2)){
+        if (!(effect.direction & Directions.Up)){
             //console.log(timeUntilFire, effect.opacity/(effect.duration));
             effectImages[inds[0]][inds[1]].h.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * snap)}`;
         }
-        if (!(effect.direction % 3)){
+        if (!(effect.direction & Directions.Right)){
             //console.log(timeUntilFire, effect.opacity, (effect.duration));
             effectImages[inds[0]][inds[1]].v.style.opacity = `${effect.opacity1 - (timeUntilFire * (effect.opacity1 - effect.opacity2))/(effect.duration * snap)}`;
         }
@@ -918,7 +918,7 @@ function redrawCanvas(){
             if (d != null){
                 let timeUntilLand = audio.currentTime - d.time;
                 switch (d.direction) {
-                    case 2:
+                    case Directions.Up:
                         if (timeUntilLand <= 0) {
                             let rgba = (flyingNotes[d.id].primary) ? `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`
                                                                    : `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
@@ -952,7 +952,7 @@ function redrawCanvas(){
                             }
                         }
                         break;
-                    case 3: 
+                    case Directions.Right: 
                         if (-256 < d.x-timeUntilLand*scrollSpeed + d.w*scrollSpeed && -timeUntilLand*scrollSpeed < canvas.width/2 + 256){
                             let rgba, rgbi, rgb0;
                             if (flyingNotes[d.id].primary) {
@@ -976,7 +976,7 @@ function redrawCanvas(){
                             ctx.fillRect(d.x-timeUntilLand*scrollSpeed,d.y,d.w*scrollSpeed,d.h);
                         }
                         break;
-                    case 5:
+                    case Directions.Down:
                         if (timeUntilLand <= 0) {
                             let rgba = (flyingNotes[d.id].primary) ? `rgba(${noteColours.primary.r},${noteColours.primary.g},${noteColours.primary.b},${noteColours.primary.a})`
                                                                    : `rgba(${noteColours.secondary.r},${noteColours.secondary.g},${noteColours.secondary.b},${noteColours.secondary.a})`;
@@ -1010,7 +1010,7 @@ function redrawCanvas(){
                             }
                         }
                         break;
-                    case 7:
+                    case Directions.Left:
                         if (d.x+timeUntilLand*scrollSpeed < canvas.width - d.w*scrollSpeed) {
                             let rgba, rgbi, rgb0;
                             if (flyingNotes[d.id].primary) {
@@ -1118,7 +1118,7 @@ function stopAnim(){
 function revertNote(note){
     if (note){
         switch (note.direction){
-            case 2:
+            case Directions.Up:
                 note.draw = (x,y) => {
                     ctx.beginPath();
                     ctx.moveTo(8 + x, 96 + y);//topleft
@@ -1132,7 +1132,7 @@ function revertNote(note){
                     ctx.stroke();
                 }
                 break;
-            case 3:
+            case Directions.Right:
                 note.draw = (x,y) => {
                     ctx.beginPath();
                     ctx.moveTo(256-96 + x,256-8 + y);//topleft
@@ -1146,7 +1146,7 @@ function revertNote(note){
                     ctx.stroke();
                 }
                 break;
-            case 5:
+            case Directions.Down:
                 note.draw = (x,y) => {
                     ctx.beginPath();
                     ctx.moveTo(256-8 + x, 256-96 + y);//topleft
@@ -1160,7 +1160,7 @@ function revertNote(note){
                     ctx.stroke();
                 }
                break;
-            case 7:
+            case Directions.Left:
                 note.draw = (x,y) => {
                     ctx.beginPath();
                     ctx.moveTo(96 + x, 8 + y);//topleft
@@ -1237,10 +1237,10 @@ function deleteSelectedEffects(){
     }
     for (let e of indsToRevert){
         let inds = e.target.split("");
-        if (!(e.direction % 2)){
+        if (!(e.direction & Directions.Up)){
             effectImages[inds[0]][inds[1]].h.style.opacity = 0;
         }
-        if (!(e.direction % 3)){
+        if (!(e.direction & Directions.Right)){
             effectImages[inds[0]][inds[1]].v.style.opacity = 0;
         }
     }
