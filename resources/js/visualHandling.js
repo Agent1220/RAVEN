@@ -352,9 +352,10 @@ function checkPairs(){
             }
             if (found){
                 flyingNotes[i].primary = false;
-                if (flyingNotes[flyingNotes[i].tailId]) flyingNotes[flyingNotes[i].tailId].primary = false;
             }
-            
+            if (flyingNotes[i].tailId !== -1){ 
+                flyingNotes[flyingNotes[i].tailId].primary = flyingNotes[i].primary;
+            }
         }
     }
     updatePositions();
@@ -1207,15 +1208,34 @@ function deleteSelectedNotes(){
                 revertNote(flyingNotes[flyingNotes[s].tailId]);
             }
 
-            let ids = flyingNotes[s].target.id.split("");
-            backLights[ids[0]][ids[1]].times.splice(backLights[ids[0]][ids[1]].times.findIndex((item) => {return item.by == s}));
+            // let ids = flyingNotes[s].target.id.split("");
+            // backLights[ids[0]][ids[1]].times.splice(backLights[ids[0]][ids[1]].times.findIndex((item) => {return item.by == s}));
 
             flyingNotes[s] = null;
         }
         selectedNotes = [];
-        updatePositions();
+        cleanupBacklights();
+        checkPairs();
+        //updatePositions();
     } else {
         deleteSelectedEffects();
+    }
+}
+
+function cleanupBacklights(){
+    for (const u of backLights) {
+        let toRevert = [];
+        for (const b of u) {
+            for (let i = 0; i < b.times.length; i++) {
+                if (!flyingNotes[b.times[i].by]) {
+                    toRevert.unshift(i);
+                }
+            }
+            
+            for (const r of toRevert) {
+                b.times.splice(r, 1);
+            }
+        }
     }
 }
 
