@@ -276,17 +276,11 @@ function cleanNullsFromRawNotes(rawNotes) {
             for (let j = i; j < rawNotes.length - 1; j++) {
                 rawNotes[j] = rawNotes[j + 1];
             }
-            //shift affected properties on all notes and canvasObjects
+            //shift affected properties on all notes
             for (let j = 0; j < rawNotes.length; j++) {
                 if (rawNotes[j])
                     if (rawNotes[j].tailId > i)
                         rawNotes[j].tailId--;
-            }
-            for (let obj of canvasObjects) {
-                if (obj.id > i)
-                    obj.id--;
-                if (obj.tail > i)
-                    obj.tail--;
             }
             //need to step back so we don't skip the earliest shifted element
             i--;
