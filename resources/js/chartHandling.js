@@ -262,6 +262,37 @@ async function saveChart(){
     }
 }
 
+function cleanNullsFromRawNotes(rawNotes) {
+    console.log("trimming nulls from rawNotes")
+    console.log("old length of array: " + rawNotes.length);
+
+    let nullsRemoved = 0;
+    // clean nulls from rawNotes
+    for (let i = 0; i < rawNotes.length - nullsRemoved; i++) {
+        //proceed linearly, for every instance of null
+        if (rawNotes[i] == null) {
+            console.log("rawNote " + i + " is null, shifting")
+            //shift all following notes
+            for (let j = i; j < rawNotes.length - 1; j++) {
+                rawNotes[j] = rawNotes[j + 1];
+            }
+            //shift affected properties on all notes
+            for (let j = 0; j < rawNotes.length; j++) {
+                if (rawNotes[j])
+                    if (rawNotes[j].tailId > i)
+                        rawNotes[j].tailId--;
+            }
+            //need to step back so we don't skip the earliest shifted element
+            i--;
+            //need to count the number of elements to trim from the array
+            nullsRemoved++;
+        }
+    }
+    //trimming the array
+    rawNotes.length = (rawNotes.length - nullsRemoved);
+    console.log("new length of array: " + rawNotes.length);
+}
+
 //time, tailId, direction, cell
 function constructChartFile(){
     chartHead.startingBpm = BPM;
@@ -274,7 +305,6 @@ function constructChartFile(){
     let noteC = 0;
     if (cId){
         let rawNotes = [];
-        // this leaves holes. too bad!
         for (let n in flyingNotes){
             if (flyingNotes[n]){
                 rawNotes[n] = new Note(flyingNotes[n].time,flyingNotes[n].tailId,flyingNotes[n].direction,flyingNotes[n].target.id,flyingNotes[n].snap);
@@ -284,6 +314,8 @@ function constructChartFile(){
             }
         }
 
+        cleanNullsFromRawNotes(rawNotes);
+
         r.notes = rawNotes;
     }
 
@@ -291,7 +323,7 @@ function constructChartFile(){
     let filteredEffects = [];
     if (eId) {
         for (let e of flyingEffects){
-            if (e){
+            if (e) {
                 filteredEffects.push(e);
                 //effC++;
             }
