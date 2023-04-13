@@ -1295,7 +1295,8 @@ function deleteSelectedEffects(){
     selectedEffects = [];
 
     // must redraw to update identifier text
-    redrawCanvas();
+    // redrawCanvas();
+    updatePositions(); // this also calls redrawCanvas() but redraws the notes too
 }
 
 function deselectNotes(){
@@ -1313,6 +1314,7 @@ function deselectNotes(){
                 document.getElementById(`b${n}`).style.opacity = "0";
             }
             selectedEffects = [];
+            updatePositions(); // so the effect numbering doesn't linger
         }
     }
 }
@@ -1335,7 +1337,8 @@ function setSelectedEffects(cell){
     }
 
     // must redraw to update identifier text
-    redrawCanvas();
+    // redrawCanvas();
+    updatePositions(); // this also calls redrawCanvas() but redraws the notes too
 }
 
 
