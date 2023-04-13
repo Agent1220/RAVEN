@@ -1044,6 +1044,29 @@ function redrawCanvas(){
             }
         }
     }
+
+    //draw identifier text for tiles in effect mode
+    if (selectedEffects.length > 0) {
+        // the offset used from the tile's top left
+        // important: the drawn text's pivot point is it's bottom left
+        let selectedEffectsTextOffset = {x:8, y:44};
+
+        ctx.fillStyle = "rgba(255,255,255)";
+        ctx.font = "48px serif"
+
+        let index = 1;
+        //entries are added to selectedEffects sequentially
+        for (t of selectedEffects) {
+            let x = t.substring(0, 1);
+            let y = t.substring(1, 2);
+            try {
+                ctx.fillText(`${index}`, gridPositions[x][y].x + selectedEffectsTextOffset.x, gridPositions[x][y].y + selectedEffectsTextOffset.y);
+            } catch (exception) {
+                console.warn(exception.message);
+            }
+            index++;
+        }
+    }
 }
 
 function fireExplosions(){
@@ -1270,6 +1293,9 @@ function deleteSelectedEffects(){
         document.getElementById(`b${e}`).style.opacity = 0;
     }
     selectedEffects = [];
+
+    // must redraw to update identifier text
+    redrawCanvas();
 }
 
 function deselectNotes(){
@@ -1307,6 +1333,9 @@ function setSelectedEffects(cell){
         selectedEffects.push(cell);
         document.getElementById(`b${cell}`).style.opacity = "1";
     }
+
+    // must redraw to update identifier text
+    redrawCanvas();
 }
 
 
