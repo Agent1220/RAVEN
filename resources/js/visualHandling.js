@@ -1,17 +1,81 @@
+/**
+ * The DOM canvas used for rendering.
+ * @type {HTMLCanvasElement}
+ */
+var canvas = document.getElementById("canvas");
+/**
+ * The canvas context used for rendering.
+ * @type {CanvasRenderingContext2D}
+ */
+var ctx = canvas.getContext("2d");
+ctx.fillStyle = "rgba(128,128,128,1)";
+ctx.strokeStyle = "rgba(128,128,128,1)";
+
+/**
+ * Identifier provided by the browser, indicating the animation process responsible for continuously redrawing the editor.
+ * @type {number}
+ */
 var animationId;
 
+
+//#region NOTE AND EFFECT ARRAYS ########################################################################
+
+/**
+ * TODO: The number of notes currently 
+ * @type {number}
+ */
 var cId = 0; //note count
+/**
+ * TODO:
+ * @type {Note[]}
+ */
 var flyingNotes = [];
+/**
+ * TODO:
+ * @type {Note[]}
+ */
 var selectedNotes = []; //stores note ids 0
 
+/**
+ * TODO: The number of effects currently 
+ * @type {number}
+ */
 var eId = 0; //effect count
+/**
+ * TODO:
+ */
 var flyingEffects = [];
+/**
+ * TODO:
+ */
 var selectedEffects = [];
 
+//#endregion ########################################################################
+
+//#region EFFECT PARAMETERS ########################################################################
+
+/**
+ * TODO:
+ * @type {number}
+ */
 var curEDur = 1;
+/**
+ * TODO:
+ * @type {number}
+ */
 var opacity1 = 0;
+/**
+ * TODO:
+ * @type {number}
+ */
 var opacity2 = 1;
+/**
+ * TODO:
+ * @type {boolean}
+ */
 var eRolling = false;
+
+//#endregion ########################################################################
 
 //var noteLandingEffect = false;
 
@@ -38,20 +102,23 @@ var eDirH = document.getElementById("eDirH");
 
 var cnvC = 0;
 var canvasObjects = []; //[{"x":0,"y":0,"h":0,"w":0,"time":0,"id":0,"direction":0}];
-var canvas = document.getElementById("canvas");
 
-var ctx = canvas.getContext("2d");
-ctx.fillStyle = "rgba(128,128,128,1)";
-ctx.strokeStyle = "rgba(128,128,128,1)";
 var inactiveOpacity = 0.1;
 var noteColours = {"primary":{"r":128, "g":128, "b":128, "a":1},
                    "secondary":{"r":128, "g":200, "b":200, "a":1}};
 // var fill = {"active":`rgba(${noteColours.r},${noteColours.g},${noteColours.b},${noteColours.a})`,
 //             "inactive":`rgba(${noteColours.r},${noteColours.g},${noteColours.b},${inactiveOpacity})`};
 
-
+/**
+ * True if the editor is currently in note editing mode.
+ * @type {boolean}
+ */
 var noteMode = true;
 
+/**
+ * TODO: 
+ * @type {number}
+ */
 var tolerance = 0.015;
 
 function calculateGridPositions(){
@@ -122,32 +189,30 @@ function imgOpsTo0(gpi, gpj){
 
 function setScrollSpeed(){
     scrollSpeed = document.getElementById("setScrollSpeed").value;
-    updatePositions();
+    drawAll();
 }
+
+//#region EFFECT PARAMETERS ########################################################################
 
 function setEffectDuration(){
     curEDur = Number(document.getElementById("setEffectDuration").value);
 }
 
 function setEffectOpacity(){
-    opacity2 = Number(document.getElementById("setEffectOpacity2").value);
     opacity1 = Number(document.getElementById("setEffectOpacity1").value);
+    opacity2 = Number(document.getElementById("setEffectOpacity2").value);
 }
 
 function setEffectRolling(){
     eRolling = document.getElementById("effectRolling").toggleAttribute("checked");
 }
 
+//#endregion ########################################################################
+
+
 // function setLandingEffect(){
 //     noteLandingEffect = document.getElementById("landingEffect").toggleAttribute("checked");
 // }
-
-function toggleMetadataMenu(){
-    let metaDiv = document.getElementById("metadataSettings");
-
-    metaDiv.style.display = (metaDiv.style.display) ? "" : "none";
-    //metaDiv.style.display = setTo;
-}
 
 function setNoteColours(act){
     let colourValues = {"r":document.getElementById("redValue").value,
@@ -180,9 +245,13 @@ function setNoteColours(act){
             console.log("wrong note colour act");
             break;
     }
-    updatePositions();
+    drawAll();
 }
 
+/**
+ * 
+ * @param {MouseEvent} event The HTML DOM MouseEvent received from the HTML document.
+ */
 function checkClick(event){
     const coords = getMousePos(event);
     const correctedCoords = {"x":coords.x + noteOffset.x,"y":coords.y + noteOffset.y};
@@ -280,7 +349,7 @@ function realignNotePositions(){
     }
 }
 
-function noteObject(x,y,dir){
+function noteObject(x, y, dir){
     switch (dir){
         case 2:
             ctx.beginPath();
@@ -359,7 +428,7 @@ function checkPairs(){
             }
         }
     }
-    updatePositions();
+    drawAll();
 }
 
 function addNote(note){
@@ -429,28 +498,8 @@ function addNote(note){
     }
 }
 
-function setSelectedNotes(note){
-    if (noteMode){
-        if (!ctrlPressed){
-            deselectNotes();
-        }
-        
-        var cango = true;
-        for (let i = 0; i < selectedNotes.length; i++) {
-            if (note.id == selectedNotes[i]){
-                cango = false;
-            } 
-        }
-        
-        if (cango){
-            selectedNotes.push(note.id);
-            note.selected = true;
-            updatePositions();
-        }
-    }
-}
 
-function updatePositions(){
+function drawAll(){
     if (cId){
         redrawCanvas();
         for (let n of flyingNotes){
@@ -471,7 +520,7 @@ function updatePositions(){
                 }
             }
         } else {
-            fireExplosions();
+            fireAllExplosions();
             checkBackLights();
         }
     }
@@ -672,7 +721,7 @@ function renderEffects(effect){
         eId++;
     }
     //console.log("added effect",flyingEffects[-1]);
-    updatePositions();
+    drawAll();
 }
 
 function resetEffects(){
@@ -801,7 +850,7 @@ function makeLongNote(pass){
             firstNote.tailId = secondNote.id;
            
             //longNoteConnections[firstNote.id] = secondNote.id;
-            updatePositions();
+            drawAll();
         } else {
             console.log("not matching notes");
         }
@@ -1069,7 +1118,7 @@ function redrawCanvas(){
     }
 }
 
-function fireExplosions(){
+function fireAllExplosions(){
     let i = gridDimensions.rows;
     while (i--){
         let j = gridDimensions.cols;
@@ -1129,13 +1178,18 @@ function checkBackLights(){
         }
     }
 }
-                        
+
+/**
+ * Enables animation of the editor's rendered objects.
+ */
 function animate(){
-    updatePositions();
+    drawAll();
     //fireExplosions();
     animationId = requestAnimationFrame(animate);
 }
-
+/**
+ * Stops animation of the editor's rendered objects.
+ */
 function stopAnim(){
     cancelAnimationFrame(animationId);
 }
@@ -1213,38 +1267,10 @@ function revertNote(note){
             }
         }
         note.tail = false;
-        updatePositions();
+        drawAll();
     }
 }
 
-function deleteSelectedNotes(){
-    if (noteMode){
-        for (let s of selectedNotes){
-            for (let n of flyingNotes){
-                if (n){
-                    if (flyingNotes[s].id == n.tailId){
-                        revertNote(n);
-                    }
-                }
-            }
-            if (flyingNotes[s].tailId != -1) {
-                revertNote(flyingNotes[s]);
-                revertNote(flyingNotes[flyingNotes[s].tailId]);
-            }
-
-            // let ids = flyingNotes[s].target.id.split("");
-            // backLights[ids[0]][ids[1]].times.splice(backLights[ids[0]][ids[1]].times.findIndex((item) => {return item.by == s}));
-
-            flyingNotes[s] = null;
-        }
-        selectedNotes = [];
-        cleanupBacklights();
-        checkPairs();
-        //updatePositions();
-    } else {
-        deleteSelectedEffects();
-    }
-}
 
 function cleanupBacklights(){
     for (const u of backLights) {
@@ -1261,6 +1287,163 @@ function cleanupBacklights(){
             }
         }
     }
+}
+
+//#region SELECTIONS ########################################################################
+
+/**
+ * Selects all notes or effects, depending on the mode the editor is currently in.
+ */
+function selectAllForMode() {
+    if (noteMode) {
+        selectAllNotes();
+    }
+    else {
+        selectAllEffects
+    }
+}
+/**
+ * Selects all notes.
+ */
+function selectAllNotes(){
+    deselectNotes();
+    for (let n of flyingNotes){
+        if (n){
+            n.selected = true;
+            selectedNotes.push(n.id);
+        }
+    }
+    drawAll();
+}
+/**
+ * Selects all effects.
+ */
+function selectAllEffects(){
+    for (let i = 0; i < 3; i++){
+        for (let j = 0; j < 5; j++){
+            setSelectedEffects(`${i}${j}`)
+        }
+    }
+}
+
+
+/**
+ * TODO:
+ * @param {*} note 
+ */
+function setSelectedNotes(note){
+    if (!ctrlPressed){
+        deselectNotes();
+    }
+    
+    var cango = true;
+    for (let i = 0; i < selectedNotes.length; i++) {
+        if (note.id == selectedNotes[i]){
+            cango = false;
+        } 
+    }
+    
+    if (cango){
+        selectedNotes.push(note.id);
+        note.selected = true;
+        drawAll();
+    }
+}
+/**
+ * TODO:
+ * @param {*} cell 
+ */
+function setSelectedEffects(cell){
+    if (!ctrlPressed){
+        deselectEffects();
+    }
+
+    var cango = true;
+        for (let i = 0; i < selectedEffects.length; i++) {
+            if (cell == selectedEffects[i]){
+                cango = false;
+            } 
+        }
+    
+    if (cango){
+        selectedEffects.push(cell);
+        document.getElementById(`b${cell}`).style.opacity = "1";
+    }
+
+    // must redraw to update identifier text
+    // redrawCanvas();
+    drawAll(); // this also calls redrawCanvas() but redraws the notes too
+}
+
+
+/**
+ * Deselects all notes and effects.
+ */
+function deselectAll(){
+    deselectNotes();
+    deselectEffects();
+}
+/**
+ * Deselects all notes.
+ */
+function deselectNotes(){
+    if (selectedNotes.length){
+        for (let n of selectedNotes){
+            flyingNotes[n].selected = false;
+        }
+        selectedNotes = [];
+    }
+    drawAll();
+}
+/**
+ * Deselects all effects.
+ */
+function deselectEffects(){
+    if (selectedEffects){
+        for (let n of selectedEffects){
+            document.getElementById(`b${n}`).style.opacity = "0";
+        }
+        selectedEffects = [];
+        drawAll(); // so the effect numbering doesn't linger
+    }
+}
+
+//#endregion ########################################################################
+
+//#region DELETIONS ########################################################################
+
+function deleteSelectedForMode(){
+    if (noteMode){
+        deleteSelectedNotes();
+    }
+    else{
+        deleteSelectedEffects();
+    }
+}
+
+function deleteSelectedNotes(){
+    for (let s of selectedNotes){
+        for (let n of flyingNotes){
+            if (n){
+                if (flyingNotes[s].id == n.tailId){
+                    revertNote(n);
+                }
+            }
+        }
+        if (flyingNotes[s].tailId != -1) {
+            revertNote(flyingNotes[s]);
+            revertNote(flyingNotes[flyingNotes[s].tailId]);
+        }
+
+        // let ids = flyingNotes[s].target.id.split("");
+        // backLights[ids[0]][ids[1]].times.splice(backLights[ids[0]][ids[1]].times.findIndex((item) => {return item.by == s}));
+
+        flyingNotes[s] = null;
+    }
+    selectedNotes = [];
+    cleanupBacklights();
+    checkPairs();
+    //drawAll();
 }
 
 function deleteSelectedEffects(){
@@ -1288,7 +1471,7 @@ function deleteSelectedEffects(){
             effectImages[inds[0]][inds[1]].v.style.opacity = 0;
         }
     }
-    updatePositions();
+    drawAll();
     for (let e of selectedEffects){
         document.getElementById(`b${e}`).style.opacity = 0;
     }
@@ -1296,80 +1479,16 @@ function deleteSelectedEffects(){
 
     // must redraw to update identifier text
     // redrawCanvas();
-    updatePositions(); // this also calls redrawCanvas() but redraws the notes too
+    drawAll(); // this also calls redrawCanvas() but redraws the notes too
 }
 
-function deselectNotes(){
-    if (noteMode){
-        if (selectedNotes.length){
-            for (let n of selectedNotes){
-                flyingNotes[n].selected = false;
-            }
-            selectedNotes = [];
-        }
-        updatePositions();
-    } else {
-        if (selectedEffects){
-            for (let n of selectedEffects){
-                document.getElementById(`b${n}`).style.opacity = "0";
-            }
-            selectedEffects = [];
-            updatePositions(); // so the effect numbering doesn't linger
-        }
-    }
-}
+//#endregion ########################################################################
 
-function setSelectedEffects(cell){
-    if (!ctrlPressed){
-        deselectNotes(selectedEffects);
-    }
+//#region SHOWCASE ########################################################################
 
-    var cango = true;
-        for (let i = 0; i < selectedEffects.length; i++) {
-            if (cell == selectedEffects[i]){
-                cango = false;
-            } 
-        }
-    
-    if (cango){
-        selectedEffects.push(cell);
-        document.getElementById(`b${cell}`).style.opacity = "1";
-    }
-
-    // must redraw to update identifier text
-    // redrawCanvas();
-    updatePositions(); // this also calls redrawCanvas() but redraws the notes too
-}
-
-
-function selectAllNotes(){
-    if (noteMode){
-        deselectNotes();
-        for (let n of flyingNotes){
-            if (n){
-                n.selected = true;
-                selectedNotes.push(n.id);
-            }
-        }
-        updatePositions();
-    } else {
-        for (let i = 0; i < 3; i++){
-            for (let j = 0; j < 5; j++){
-                setSelectedEffects(`${i}${j}`)
-            }
-        }
-    }
-}
-
-
-function toggleUI(){
-    if (topControlsElement.style.display == "none"){
-        topControlsElement.style.display = "";
-    } else {
-        topControlsElement.style.display = "none";
-    }
-}
-
+/**
+ * TODO:
+ */
 function showcase(){
     if (audio.duration != NaN){
         audio.pause();
@@ -1379,6 +1498,9 @@ function showcase(){
     }
 }
 
+/**
+ * TODO:
+ */
 function stopShowcase(){
     if (audio.duration != NaN){
         topControlsElement.style.display = "";
@@ -1386,3 +1508,30 @@ function stopShowcase(){
         stopAudio();
     }
 }
+
+//#endregion ########################################################################
+
+//#region UI TOGGLES ########################################################################
+
+/**
+ * Toggles the display of the editor UI.
+ */
+function toggleUI(){
+    if (topControlsElement.style.display == "none"){
+        topControlsElement.style.display = "";
+    } else {
+        topControlsElement.style.display = "none";
+    }
+}
+
+/**
+ * Toggles the display of the metadata editing menu.
+ */
+function toggleMetadataMenu(){
+    let metaDiv = document.getElementById("metadataSettings");
+
+    metaDiv.style.display = (metaDiv.style.display) ? "" : "none";
+    //metaDiv.style.display = setTo;
+}
+
+//#endregion ########################################################################

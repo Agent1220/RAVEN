@@ -1,16 +1,4 @@
-var currDirection = 2;
-var eDir = 2;
-
-var gridDimensions = {"rows":3,"cols":5}
-var dreaming = true;
-
-var chartHead = new ChartHead(120,180,0,0,0,"5x3");
-var chartMetadata = new ChartMetadata("Song Name","Artist","Genre",`${chartHead.startingBpm}BPM`,"Charter","DREAM","1"); 
-var chartNotes = [];
-var chartEffects = [];
-
-var chartFile = new Chart(chartMetadata,chartHead,chartNotes,chartEffects);
-/**
+/*
  *  direction explanation: the direction the note is COMING FROM, represented with a number. 
  *      up: 2, right: 3, down: 5, left: 7.
  *      if it's coming from multiple directions at once, 
@@ -20,21 +8,76 @@ var chartFile = new Chart(chartMetadata,chartHead,chartNotes,chartEffects);
  *      effects only have two directions: horizontal: 2, vertical 3.
  */
 
-//input chart loading
-document.getElementById("chartInput").addEventListener("change", function() {
-    let chartURL = URL.createObjectURL(this.files[0]);
-    fetch(chartURL)
-        .then((response) => response.json())
-            .then((data) => chartLoading(data),
-                  (error) => console.log(error)
-            );
-    calculateGridPositions();
-});
+//#region EDITOR VARIABLES ########################################################################
 
+/**
+ * The direction newly placed notes will travel.
+ * @type {number}
+ */
+var currDirection = 2;
+/**
+ * The direction newly placed effects will travel.
+ * @type {number}
+ */
+var eDir = 2;
+
+/**
+ * The desired size of the grid, as set by {@link dreaming}.
+ * TODO: replace with a function, less error prone.
+ */
+var gridDimensions = {"rows":3,"cols":5}
+/**
+ * True if the current grid style is DREAM.
+ * @type {boolean}
+ */
+var dreaming = true;
+
+//#endregion ########################################################################
+
+//#region CURRENT CHART ########################################################################
+
+/**
+ * The head of the currently edited chart.
+ * @type {ChartHead}
+ */
+var chartHead = new ChartHead(120,180,0,0,0,"5x3");
+/**
+ * The metadata of the currently edited chart.
+ * @type {ChartMetadata}
+ */
+var chartMetadata = new ChartMetadata("Song Name","Artist","Genre",`${chartHead.startingBpm}BPM`,"Charter","DREAM","1"); 
+/**
+ * The list of notes in the currently edited chart.
+ * @type {Note[]}
+ */
+var chartNotes = [];
+/**
+ * The list of effects in the currently edited chart.
+ * @type {Effect[]}
+ */
+var chartEffects = [];
+
+/**
+ * @type {Chart}
+ */
+var chartFile = new Chart(chartMetadata, chartHead, chartNotes, chartEffects);
+
+//#endregion ########################################################################
+
+
+
+//#region CHART LOADING ########################################################################
+
+/**
+ * Loads the chart provided via the parameter into the editor.
+ * @param {Chart} data The chart to be loaded.
+ */
 function chartLoading(data){
     if (cId){
         selectAllNotes();
         deleteSelectedNotes();
+        selectAllEffects();
+        deleteSelectedEffects();
     }
     //console.log(data);
     chartFile = data;
@@ -75,6 +118,10 @@ function chartLoading(data){
     alert("Loaded chart!");
 }
 
+/**
+ * Loads the notes provided via the parameter for editing.
+ * @param {Notes[]} inputNotes The list of notes to load for editing.
+ */
 function loadChartNotes(inputNotes){
     if (inputNotes.length){
         noteLandingEffect = false;
@@ -117,7 +164,7 @@ function loadChartNotes(inputNotes){
             addNote(n);
             // console.log(cId);
         }
-        deselectNotes();
+        deselectAll();
         // console.log("rendered notes");
 
         // console.log("creating long notes");
@@ -143,6 +190,10 @@ function loadChartNotes(inputNotes){
     }
 }
 
+/**
+ * Loads the effects provided via the parameter for editing.
+ * @param {Effect[]} inputEffects The list of effects to load for editing.
+ */
 function loadChartEffects(inputEffects){
     if (inputEffects.length){
         chartEffects = [];
@@ -168,6 +219,14 @@ function loadChartEffects(inputEffects){
     }
 }
 
+//#endregion ########################################################################
+
+//#region MODE CHANGE ########################################################################
+
+/**
+ * Toggles the editor's grid type between DREAM and NIGHTMARE, then rebuilds the grid.
+ * Sets {@link dreaming}, {@link gridDimensions} and the metadata of the opened chart.
+ */
 function setMode() {
     if (dreaming) {
         dreaming = false;
@@ -189,6 +248,10 @@ function setMode() {
     constructGrid();
 }
 
+/**
+ * Deletes rendering objects for notes that are no longer on the grid, because it's size has been changed.
+ * TODO: imo, changing the grid size should completely clear the chart.
+ */
 function removeFallenNotes(){
     for (let i = 0; i < flyingNotes.length; i++) {
         if (flyingNotes[i]) {
@@ -200,7 +263,12 @@ function removeFallenNotes(){
             }
         }
     }
+}
 
+/**
+ * Deletes rendering objects for effects that are no longer on the grid, because it's size has been changed.
+ */
+function removeFallenEffects(){
     noteMode = false;
     for (let i = 0; i < flyingEffects.length; i++) {
         if (flyingEffects[i]) {
@@ -213,30 +281,76 @@ function removeFallenNotes(){
     noteMode = true;
 }
 
-//METADATA MENU ##########################################################
 
+/**
+ * Toggles the editor between note placement mode and effect placement mode.
+ */
+function switchMode(){
+    if (noteMode){
+        noteMode = false;
+        document.getElementById("switchMode").innerHTML = "Mode: effect";
+
+        document.getElementById("eSettings").style.display = "";
+        document.getElementById("noteSettings").style.display = "none";
+        dirC.style.display = "none";
+        eDirC.style.display = "flex";
+    } else {
+        noteMode = true;
+        document.getElementById("switchMode").innerHTML = "Mode: note";
+
+        document.getElementById("eSettings").style.display = "none";
+        document.getElementById("noteSettings").style.display = "";
+        dirC.style.display = "flex";
+        eDirC.style.display = "none";
+    }
+}
+
+//#endregion ########################################################################
+
+//#region METADATA MENU ########################################################################
+
+/**
+ * Sets the song's title in the edited metadata. (callback)
+ */
 function setSongName(){
     chartMetadata.songName = document.getElementById("setSongName").value;
 }
 
+/**
+ * Sets the song's artist in the edited metadata. (callback)
+ */
 function setSongArtist(){
     chartMetadata.artist = document.getElementById("setSongArtist").value;
 }
 
+/**
+ * Sets the song's genre in the edited metadata. (callback)
+ */
 function setGenre(){
     chartMetadata.genre = document.getElementById("setGenre").value;
 }
 
+/**
+ * Sets the song's scale in the edited metadata. (callback)
+ */
 function setScale(){
     chartMetadata.scale = document.getElementById("setScale").value;
 }
 
+/**
+ * Sets the charter's name in the edited metadata. (callback)
+ */
 function setCharter(){
     chartMetadata.charter = document.getElementById("setCharter").value;
 }
 
-//########################################################################
+//#endregion ########################################################################
 
+//#region SAVING/EXPORT ########################################################################
+
+/**
+ * Saves the current chart into a file.
+ */
 async function saveChart(){
     var path;
     var check = false;
@@ -262,6 +376,10 @@ async function saveChart(){
     }
 }
 
+/**
+ * Cleans null indices from the given array of notes.
+ * @param {Note[]} rawNotes The array of notes to clean.
+ */
 function cleanNullsFromRawNotes(rawNotes) {
     console.log("trimming nulls from rawNotes")
     console.log("old length of array: " + rawNotes.length);
@@ -293,7 +411,10 @@ function cleanNullsFromRawNotes(rawNotes) {
     console.log("new length of array: " + rawNotes.length);
 }
 
-//time, tailId, direction, cell
+/**
+ * Constructs a complete chart from the current values of the editor, ready for export.
+ * @returns {Chart} The newly constructed Chart.
+ */
 function constructChartFile(){
     chartHead.startingBpm = BPM;
     let r = new Chart(
@@ -337,6 +458,14 @@ function constructChartFile(){
     return r;
 }
 
+//#endregion ########################################################################
+
+//#region DIRECTION DIALS ########################################################################
+
+/**
+ * Variable used in the rotation of the editor's direction selector.
+ * @type {number}
+ */
 var rotIter = 1;
 function changeDirection(){
     let deg = 90 * rotIter;
@@ -349,6 +478,10 @@ function changeDirection(){
     currDirection = a[rotIter];
 }
 
+/**
+ * Variable used in the rotation of the editor's direction selector.
+ * @type {number}
+ */
 var eIter = 0;
 function changeEffectDirection(){
     let a = [2,3,6];
@@ -360,22 +493,4 @@ function changeEffectDirection(){
     eDirV.style.opacity = (eDir % 3) ? "0" : "1";
 }
 
-function switchMode(){
-    if (noteMode){
-        noteMode = false;
-        document.getElementById("switchMode").innerHTML = "Mode: effect";
-
-        document.getElementById("eSettings").style.display = "";
-        document.getElementById("noteSettings").style.display = "none";
-        dirC.style.display = "none";
-        eDirC.style.display = "flex";
-    } else {
-        noteMode = true;
-        document.getElementById("switchMode").innerHTML = "Mode: note";
-
-        document.getElementById("eSettings").style.display = "none";
-        document.getElementById("noteSettings").style.display = "";
-        dirC.style.display = "flex";
-        eDirC.style.display = "none";
-    }
-}
+//#endregion ########################################################################

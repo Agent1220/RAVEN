@@ -182,15 +182,15 @@
       Mousetrap.bind("ctrl+o",   ()=>document.getElementById('audioInput').click());
       Mousetrap.bind("ctrl+k",   ()=>document.getElementById('chartInput').click());
       Mousetrap.bind("mod+s",    ()=>saveChart());
-      Mousetrap.bind("backspace",()=>deleteSelectedNotes());
+      Mousetrap.bind("backspace",()=>deleteSelectedForMode());
       Mousetrap.bind("r",        ()=>changeDirection());
       Mousetrap.bind("shift+r",  ()=>{changeDirection();changeDirection();changeDirection()})
       Mousetrap.bind("p",        ()=>showcase());
       Mousetrap.bind("l",        ()=>stopShowcase());
       Mousetrap.bind("ctrl",     ()=>ctrlPressed = true),
       Mousetrap.bind("ctrl",     ()=>ctrlPressed = false, "keyup");
-      Mousetrap.bind("esc",      ()=>deselectNotes());
-      Mousetrap.bind("ctrl+a",   ()=>selectAllNotes());
+      Mousetrap.bind("esc",      ()=>deselectAll());
+      Mousetrap.bind("ctrl+a",   ()=>selectAllForMode());
       Mousetrap.bind("tab",      ()=>toggleUI())
       Mousetrap.bind("m",        ()=>seekAudio())
       Mousetrap.bind("enter",    ()=>{if (noteMode) makeLongNote();})
