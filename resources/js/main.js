@@ -2,16 +2,16 @@
 
 /**
  * A note used in the map. It traverses in `direction`, before hitting `cell` at the moment defined by `time`.
- * Optionally, if the head of a long note, `tailId` indicates the end point of the note.
+ * If the head of a long note, `tailId` indicates the ending note of the LN, if it isn't, it's `-1`.
  */
 class Note {
     /**
-     * The time in seconds (during the playback of the current song) on which the note must be pressed.
+     * The time in seconds (during the playback of the current song) when the note will land on its target cell.
      * @type {number}
      */
     time;
     /**
-     * The sequential ID (index) of the tailing note. If defined, this object is the head of a long note.
+     * The sequential ID (index) of the tailing note. If defined (not -1), this object is the head of a long note.
      * @type {number}
      */
     tailId;
@@ -21,22 +21,22 @@ class Note {
      */
     direction;
     /**
-     * The cell on which the note appears.
+     * The cell on which the note will land.
      * @type {string}
      */
     cell;
     /**
-     * TODO: something related to inter-beat snapping? used during rendering?
+     * The snapping the note's time shall align to.
      * @type {number}
      */
     snap;
 
     /**
-     * @param {number} time The time in seconds (during the playback of the current song) on which the note must be pressed.
-     * @param {number} tailId The sequential ID (index) of the tailing note. If defined, this object is the head of a long note.
+     * @param {number} time The time in seconds (during the playback of the current song) when the note will land on its target cell.
+     * @param {number} tailId The sequential ID (index) of the tailing note. If defined (not -1), this object is the head of a long note.
      * @param {number} direction The direction in which the note travels.
-     * @param {string} cell The cell on which the note appears.
-     * @param {number} snap TODO: something related to inter-beat snapping? used during rendering?
+     * @param {string} cell The cell on which the note will land.
+     * @param {number} snap The snapping the note's time shall align to.
      */
     constructor(time, tailId, direction, cell, snap) {
         this.time = time;
@@ -48,7 +48,7 @@ class Note {
 }
 
 /**
- * A visual effect used in the map. It traverses in `direction`, before hitting `cell` at the moment defined by `time`.
+ * A visual effect used in the chart. `direction` defines its orientation, it appears on `cell` at the moment defined by `time` over `duration`.
  */
 class Effect{
     /**
@@ -57,12 +57,12 @@ class Effect{
      */
     time;
     /**
-     * The duration for which the effect will appear.
+     * The duration over which the effect will fade.
      * @type {number}
      */
     duration;
     /**
-     * The direction the effect travels.
+     * The orientation of the effect.
      * @type {number}
      */
     direction;
@@ -72,17 +72,17 @@ class Effect{
      */
     cell;
     /**
-     * TODO: 
+     * The opacity to which the effect will fade to. For now, either 0 (fades from 1) or 1 (fades from). 
      * @type {number}
      */
     opacity;
 
     /**
      * @param {number} time The time in seconds (during the playback of the current song) on which the effect will appear.
-     * @param {number} duration The duration for which the effect will appear.
-     * @param {number} direction The direction the effect travels.
+     * @param {number} duration The duration over which the effect will fade.
+     * @param {number} direction The orientation of the effect.
      * @param {string} cell The cell on which the effect will appear.
-     * @param {number} opacity TODO: 
+     * @param {number} opacity The opacity to which the effect will fade to. For now, either 0 (fades from 1) or 1 (fades from). 
      */
     constructor(time, duration, direction, cell, opacity){
         this.time = time;
@@ -95,7 +95,7 @@ class Effect{
 }
 
 /**
- * Structure storing metadata for a given chart.
+ * Structure storing metadata for the used chart.
  */
 class ChartMetadata{
     /**
@@ -114,7 +114,7 @@ class ChartMetadata{
      */
     genre;
     /**
-     * The BPM of the charted song.
+     * The BPM (beats per minute) of the charted song.
      * @type {number}
      */
     bpm;
@@ -129,7 +129,7 @@ class ChartMetadata{
      */
     style;
     /**
-     * TODO: my brain is not music enough to know what this means
+     * The supposed difficulty of the cahrt, if it were playable.
      * @type {number}
      */
     scale;
@@ -138,10 +138,10 @@ class ChartMetadata{
      * @param {string} songName The title of the charted song.
      * @param {string} artist The name of the song's artist.
      * @param {string} genre The genre of the charted song.
-     * @param {number} bpm The BPM of the charted song.
+     * @param {number} bpm The BPM (beats per minute) of the charted song.
      * @param {string} charter The name of the charter.
      * @param {string} style The grid type of the chart.
-     * @param {number} scale TODO: 
+     * @param {number} scale The supposed difficulty of the cahrt, if it were playable.
      */
     constructor(songName, artist, genre, bpm, charter, style, scale){
         this.songName = songName;
@@ -169,7 +169,7 @@ class ChartHead{
      */
     startingBpm;
     /**
-     * TODO: the same as it is in beat saber?
+     * The time offset of the chart relative to the audio, in milliseconds.
      * @type {number}
      */
     offset;
@@ -187,7 +187,7 @@ class ChartHead{
     /**
      * @param {number} length The length of the chart in seconds.
      * @param {number} startingBpm The starting BPM of the chart.
-     * @param {number} offset TODO: 
+     * @param {number} offset The time offset of the chart relative to the audio, in milliseconds.
      * @param {number} noteCount The number of notes in the chart.
      * @param {string} style The grid type of the chart.
      */
@@ -358,7 +358,7 @@ function constructGrid(){
 //#region WINDOW FUNCTIONS
 
 /**
- * Toggles between fullscreen and windowed mode, realigning the visual elements to fit.
+ * Toggles between fullscreen and windowed mode, then realigns the visual elements to fit.
  */
 async function toggleFullscreen(){
     if (await Neutralino.window.isFullScreen()){

@@ -4,41 +4,40 @@
  * Reference to the progress bar.
  * @type {HTMLElement}
  */
-var progressBar = document.getElementById("progressBar");
+const progressBar = document.getElementById("progressBar");
 /**
  * Reference to the text label of the audio progress bar.
  * @type {HTMLElement}
  */
-var timeText = document.getElementById("timeText");
+const timeText = document.getElementById("timeText");
 
 //#endregion
 
 //#region AUDIO DESCRIPTORS ########################################################################
 
 /**
- * Audio currently being played.
- * @type {Audio}
+ * Audio used by the editor.
+ * @type {HTMLAudioElement}
  */
-var audio = new Audio(); //the main audio
+const audio = new Audio(); //the main audio
 
 /**
- * The BPM of the currently loaded chart.
+ * The BPM (beats per minute) of the current chart.
  * @type {number}
  */
 var BPM = 180;
 /**
- * The snapping parameter: the number of possible note position in a given beat.
- * TODO: is this correct? i can't decipher the nextStep assignment
+ * The fraction of the beat placed notes will snap to. eg. 4 means 1/4th beat.
  * @type {number}
  */
 var snapping = 4;
 /**
- * The snapping interval: the distance between possible note positions.
+ * The distance between time snap places, in seconds.
  * @type {number}
  */
 var nextStep = 60 / BPM * 4 / snapping;
 /**
- * The total length of the played audio to display on the progress bar.
+ * The total length of the used audio to display on the progress bar.
  * @type {string}
  */
 var minSec = "";
@@ -49,19 +48,20 @@ var minSec = "";
 //#region PLAYBACK VARIABLES ########################################################################
 
 /**
- * Time (in seconds) to automatically seek to when the appropriate button is pressed.
+ * Time (in seconds) to automatically seek to when the appropriate button (default: M) is pressed.
  * @type {number}
  */
 var anchoredTime = 0;
 /**
  * The offset between audio playback and chart playback.
  * TODO: which is delayed, the chart or the audio? 
+ *      currently, neither, because I'm a fucking moron. but the chart is supposed to be delayed by this amount so it's synced with the song 
  * @type {number}
  */
 var audioOffset = 0;
 
 /**
- * TODO: dunno
+ * Mousewheel speed multiplier.
  * @type {number}
  */
 var mwheelSpeed = 1;
@@ -73,7 +73,7 @@ var mwheelSpeed = 1;
 //#region PLAY, PAUSE, SEEK ########################################################################
 
 /**
- * Toggles pause of the currently played audio.
+ * Plays/pauses the used audio.
  */
 function playPauseAudio(){
     if (!audio.paused){
@@ -105,19 +105,6 @@ function seekAudio(event){
 
         if (event){
             if (event.deltaY){
-                // if (event.deltaY < 0){
-                //     if (+percent - mwheelSpeed <= 0){
-                //         percent = 0;
-                //     } else {
-                //         percent = +percent - mwheelSpeed;
-                //     }
-                // } else {
-                //     if (+percent + mwheelSpeed >= 100){
-                //         percent = 100;
-                //     } else {
-                //         percent = +percent + mwheelSpeed;
-                //     }
-                // }
                 percent = progressBar.style.width.split("%").shift();
 
                 if (event.deltaY < 0){
@@ -133,7 +120,6 @@ function seekAudio(event){
                 audio.currentTime = (audio.duration * percent) / 100;
             }
 
-            //snapAudio();
             if (percent <= 100 && percent >= 0){
                 progressBar.style.width = `${percent}%`;
             }
@@ -141,15 +127,13 @@ function seekAudio(event){
             timeText.innerHTML = `${convertToMinSec(audio.currentTime)} / ${minSec}`;
             drawAll();
         } else {
-            if (audio.duration) {
-                audio.currentTime = anchoredTime;
-                snapAudio()
-                percent = anchoredTime / audio.duration;
-                progressBar.style.width = `${percent*100}%`;
-                
-                timeText.innerHTML = `${convertToMinSec(audio.currentTime)} / ${minSec}`;
-                drawAll();
-            }
+            audio.currentTime = anchoredTime;
+            snapAudio()
+            percent = anchoredTime / audio.duration;
+            progressBar.style.width = `${percent*100}%`;
+            
+            timeText.innerHTML = `${convertToMinSec(audio.currentTime)} / ${minSec}`;
+            drawAll();
         }
     }
 }
@@ -163,7 +147,7 @@ function setAnchor(){
 }
 
 /**
- * Skips the currently loaded audio to the next snapping step.
+ * Skips the used audio to the next snapping step.
  * @param {boolean} fw True if the step should happen forward.
  */
 function stepAudio(fw){
@@ -174,13 +158,12 @@ function stepAudio(fw){
             audio.currentTime = audio.currentTime - nextStep * mwheelSpeed;
         }
     }
-    //snapAudio();
     drawAll();
 }
 
 
 /**
- * Sets the current playback time to the closes previous snapping step.
+ * Sets the current playback time to the closest previous snapping step.
  */
 function snapAudio(){
     if (audio.duration){
@@ -206,14 +189,14 @@ function snapAudio(){
 //#region PLAYBACK SPEED ########################################################################
 
 /**
- * Sets the playback speed of the currently played audio.
+ * Sets the playback speed of the used audio.
  */
 function setPlaybackSpeed(){
     audio.playbackRate = document.getElementById("setPlaybackSpeed").value;
 }
 
 /**
- * Decreases the playback speed of the currently played audio by 10%, down to a minimum of 10%.
+ * Decreases the playback speed of the used audio by 10% (additive), down to a minimum of 10%.
  */
 function decreasePlaybackSpeed(){
     let element = document.getElementById("setPlaybackSpeed");
@@ -224,7 +207,7 @@ function decreasePlaybackSpeed(){
 }
 
 /**
- * Increases the playback speed of the currently played audio by 10%. Careful, no allowed maximum.
+ * Increases the playback speed of the used audio by 10% (additive). Careful, as this isn't limited. 
  */
 function increasePlaybackSpeed(){
     let element = document.getElementById("setPlaybackSpeed");
@@ -237,7 +220,7 @@ function increasePlaybackSpeed(){
 //#region DESCRIPTORS, SETTINGS ########################################################################
 
 /**
- * Sets the length of the currently loaded audio.
+ * Sets the length of the used audio.
  */
 function setAudioDuration(){
     audio.currentTime = 0;
@@ -256,7 +239,7 @@ function setAudioDuration(){
 }
 
 /**
- * Sets the BPM of the chart, and appropriately adjusts note snapping steps.
+ * Sets the BPM of the chart, then snaps the audio according to the new BPM.
  */
 function setBpm(){
     BPM = document.getElementById("setBpm").value;
@@ -265,7 +248,7 @@ function setBpm(){
 }
 
 /**
- * Sets the snapping interval of the chart, and appropriately adjusts note snapping steps.
+ * Sets the snapping interval.
  */
 function setSnapping(){
     snapping = document.getElementById("setSnapping").value;  
@@ -274,6 +257,7 @@ function setSnapping(){
 
 /**
  * Sets the audio offset of the chart.
+ * TODO: audio offset doesn't work lol
  */
 function setOffset(){
     audioOffset = document.getElementById("setOffset").value / 1000;
@@ -307,8 +291,8 @@ function convertToMinSec(t){
 //#region NOTE REALIGNMENT ########################################################################
 
 /**
- * Moves the selected notes (and their rendered objects) forwards or backwards in time by a single step.
- * @param {boolean} forward True if the move should be forward, false if backward.
+ * Moves the selected notes, including LNs, forwards or backwards in time by a single step.
+ * @param {boolean} forward True if the move should be forwards, false if backwards.
  */
 function moveNotesTime(forward){
     for (let s of selectedNotes){
@@ -341,38 +325,14 @@ function moveNotesTime(forward){
                 c.snap = flyingNotes[c.id].snap;
             }
         }
-
-        // for (let n of flyingNotes){
-        //     if (n){
-        //         if (n.id == s){
-        //             let step = (forward) ? n.time + nextStep 
-        //             : n.time - nextStep > 0 ?  n.time - nextStep
-        //             : n.time;
-        //             n.time = step;
-        //             n.snap = snapping;
-        //         }
-
-        //         for (let c of canvasObjects){
-        //             if (c.id == n.id){ //if head of LN
-        //                 let step = (forward) ? c.time + nextStep 
-        //                 : c.time - nextStep > 0 ?  c.time - nextStep
-        //                 : c.time;
-        //                 c.time = step;
-        //                 c.snap = snapping;
-        //             }
-        //         }
-        //     }
-        // }
     }
     checkPairs();
-    //drawAll();
 }
 
 /**
- * Returns the closest previous snapping step to the playback position given in `time`, according to the song's BPM and the given `snap` parameter.
- * TODO: is this correct?
- * @param {number} time The playback position to find the matching snapping step to.
- * @param {number} snap The number of steps to use per beat.
+ * Returns the closest previous snapping step's time in the audio given in `time`, according to the song's BPM and the given `snap` snapping.
+ * @param {number} time The time in the audio to align.
+ * @param {number} snap The snapping to snap the time to.
  * @returns 
  */
 function snapTime(time, snap){
@@ -398,8 +358,7 @@ function snapTime(time, snap){
 }
 
 /**
- * Updates the notes to fit onto the snapping steps.
- * TODO: ?
+ * Updates the notes' position in time to fit onto the snapping steps.
  */
 function realignNoteTimes(){
     for (let n in flyingNotes){
@@ -423,7 +382,7 @@ function updateProgressBar(){
 }
 
 /**
- * TODO: not gonna search rn to find out what mwheel does
+ * Sets the mousewheel speed multiplier.
  */
 function setMwheelSpeed(){
     mwheelSpeed = document.getElementById("setMwheelSpeed").value;

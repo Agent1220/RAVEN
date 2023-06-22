@@ -26,13 +26,13 @@ var animationId;
  */
 var cId = 0; //note count
 /**
- * TODO:
- * @type {Note[]}
+ * Contains notes that have been placed in the editor. 
+ * TODO: type
  */
 var flyingNotes = [];
 /**
- * TODO:
- * @type {Note[]}
+ * Contains the ids of currently selected notes.
+ * @type {number}
  */
 var selectedNotes = []; //stores note ids 0
 
@@ -42,11 +42,12 @@ var selectedNotes = []; //stores note ids 0
  */
 var eId = 0; //effect count
 /**
- * TODO:
+ * Contains effects that have been placed in the editor.
+ * TODO: type
  */
 var flyingEffects = [];
 /**
- * TODO:
+ * Contains the ids of currently selected notes.
  */
 var selectedEffects = [];
 
@@ -55,22 +56,22 @@ var selectedEffects = [];
 //#region EFFECT PARAMETERS ########################################################################
 
 /**
- * TODO:
+ * Duration multiplier for newly created effects.
  * @type {number}
  */
 var curEDur = 1;
 /**
- * TODO:
+ * The opacity value newly created effects will fade from.
  * @type {number}
  */
 var opacity1 = 0;
 /**
- * TODO:
+ * The opacity value newly created effects will fade to.
  * @type {number}
  */
 var opacity2 = 1;
 /**
- * TODO:
+ * Whether effect rolling (placing a sequence of effects over several tiles) will be applied to newly created effects.
  * @type {boolean}
  */
 var eRolling = false;
@@ -79,35 +80,87 @@ var eRolling = false;
 
 //var noteLandingEffect = false;
 
+/**
+ * The speed notes move at, in pixels/second.
+ * @type {number}
+ */
 var scrollSpeed = 400;
 
+/**
+ * Visual offset values for LN bodies, in pixels.
+ */
 const LNOffset = {"head":{"x":8,"y":128},
                   "tail":{"x":128,"y":8}};
+/**
+ * Visual offset values for notes, in pixels.
+ */
 var noteOffset = {"x":0,"y":-19.75};
+
+/**
+ * I have zero clue.
+ */
 var visOffset = {"x":4, "y":-37};
+
+/**
+ * Offsets used during click checking, in pixels.
+ */
 var checkOffset = {"vertical":{"x":4,"y":118},
                    "horizontal":{"x":96,"y":20}};
                    
+/**
+ * The center of each grid element.
+ */
 var gridPositions = [];
+/**
+ * The elements of the effects that are triggered by the chart.
+ */
 var effectImages = [{"v":"doc", "h":"doc"}];
+/**
+ * The elements of the explosions that appear under notes when they land.
+ */
 var explosions = [];
+/**
+ * The elements of the background lights that appear when a note is close to landing, and info about the time they need to be active for.
+ */
 var backLights = [];
                    
-var topControlsElement = document.getElementById("topControls");
+/**
+ * this is named poorly. The `div` that contains the UI elements on the sides.
+ */
+var sideControlsElement = document.getElementById("topControls");
+/**
+ * The note direction changer element.
+ */
 var dirC = document.getElementById("dirChanger");
+/**
+ * The effect orientation changer element.
+ */
 var eDirC = document.getElementById("eDir");
+/**
+ * The vertical orientation indicator element.
+ */
 var eDirV = document.getElementById("eDirV");
+/**
+ * The horizontal orientation indicator element.
+ */
 var eDirH = document.getElementById("eDirH");
 
-
+/**
+ * The number of LN bodies that have been created.
+ */
 var cnvC = 0;
+/**
+ * Contains info about LN bodies. 
+ * TODO: make an LN body class. same with flying notes and effects but I'm too lazy to scroll back
+ */
 var canvasObjects = []; //[{"x":0,"y":0,"h":0,"w":0,"time":0,"id":0,"direction":0}];
 
+/**
+ * The opacity landed notes will fade to.
+ */
 var inactiveOpacity = 0.1;
 var noteColours = {"primary":{"r":128, "g":128, "b":128, "a":1},
                    "secondary":{"r":128, "g":200, "b":200, "a":1}};
-// var fill = {"active":`rgba(${noteColours.r},${noteColours.g},${noteColours.b},${noteColours.a})`,
-//             "inactive":`rgba(${noteColours.r},${noteColours.g},${noteColours.b},${inactiveOpacity})`};
 
 /**
  * True if the editor is currently in note editing mode.
@@ -116,11 +169,14 @@ var noteColours = {"primary":{"r":128, "g":128, "b":128, "a":1},
 var noteMode = true;
 
 /**
- * TODO: 
+ * Error margin, in seconds, that is allowed when timing things like landing explosions.
  * @type {number}
  */
 var tolerance = 0.015;
 
+/**
+ * Fills {@link gridPositions} as a matrix with the coordinates of the tiles' top left corner, corrected by {@link noteOffset}.
+ */
 function calculateGridPositions(){
     gridPositions = [];
     let gpi = gridDimensions.rows;
@@ -135,6 +191,9 @@ function calculateGridPositions(){
     }
 }
 
+/**
+ * Fills {@link explosions} with the references of the explosion sprites and with info about whether they are going to be fired on update.
+ */
 function getCells(){
     explosions = [];
     let i = gridDimensions.rows;
@@ -148,6 +207,11 @@ function getCells(){
     }
 }
 
+/**
+ * Fills {@link effectImages} with references to vertical and horizontal effect images, and sets all effect images' opacities to `0`.
+ * Fills {@link backLights} with references to incoming lights and info about when they should fire.
+ * @todo split into multiple functions for clarity's sake
+ */
 function getEffectImages(){
     effectImages = [];
     backLights = [];
@@ -180,6 +244,9 @@ function getEffectImages(){
     }
 }
 
+/**
+ * Sets the opacity of the effect images at the given coordinates to 0 (fully transparent).
+ */
 function imgOpsTo0(gpi, gpj){
     document.getElementById(`v${gpi}${gpj}`).style.opacity = "0";
     document.getElementById(`h${gpi}${gpj}`).style.opacity = "0";
@@ -187,6 +254,9 @@ function imgOpsTo0(gpi, gpj){
     document.getElementById(`g${gpi}${gpj}`).style.opacity = "0";
 }
 
+/**
+ * Sets the falling speed of notes based on the appropriate element, then calls an update.
+ */
 function setScrollSpeed(){
     scrollSpeed = document.getElementById("setScrollSpeed").value;
     drawAll();
@@ -194,15 +264,24 @@ function setScrollSpeed(){
 
 //#region EFFECT PARAMETERS ########################################################################
 
+/**
+ * Sets the duration of newly placed effects based on the appropriate element.
+ */
 function setEffectDuration(){
     curEDur = Number(document.getElementById("setEffectDuration").value);
 }
 
+/**
+ * Sets the opacity of newly placed effects based on the appropriate element.
+ */
 function setEffectOpacity(){
     opacity1 = Number(document.getElementById("setEffectOpacity1").value);
     opacity2 = Number(document.getElementById("setEffectOpacity2").value);
 }
 
+/**
+ * Toggles effect rolling of newly placed effects based on the appropriate element (also changes "checked" attribute of said element).
+ */
 function setEffectRolling(){
     eRolling = document.getElementById("effectRolling").toggleAttribute("checked");
 }
@@ -214,6 +293,9 @@ function setEffectRolling(){
 //     noteLandingEffect = document.getElementById("landingEffect").toggleAttribute("checked");
 // }
 
+/**
+ * Sets the primary (solo) or secondary (multi) colour of the notes based on the appropriate element.
+ */
 function setNoteColours(act){
     let colourValues = {"r":document.getElementById("redValue").value,
                         "g":document.getElementById("greenValue").value,
@@ -249,7 +331,10 @@ function setNoteColours(act){
 }
 
 /**
- * 
+ * Called whenever the canvas is clicked on. 
+ * Searches for notes whose bounding boxes contain the clicked point.
+ * If there is a note that contains it, the found note is selected.
+ * If there isn't any, and the click falls into the boundaries of a cell, then, based on whether it's in note or effect mode respectively, it places a note on or selects the cell. 
  * @param {MouseEvent} event The HTML DOM MouseEvent received from the HTML document.
  */
 function checkClick(event){
@@ -338,6 +423,9 @@ function checkClick(event){
     }
 }
 
+/**
+ * Sets each placed note's target's coordinates their respective target cell's coordinates.
+ */
 function realignNotePositions(){
     for (const n of flyingNotes) {
         if (n) {
@@ -349,6 +437,12 @@ function realignNotePositions(){
     }
 }
 
+/**
+ * Draws a note. TODO: make notes more modular
+ * @param {Number} x x-offset
+ * @param {Number} y y-offset
+ * @param {Number} dir the direction the note flies in
+ */
 function noteObject(x, y, dir){
     switch (dir){
         case 2:
@@ -404,6 +498,10 @@ function noteObject(x, y, dir){
     }
 }
 
+/**
+ * Searches for notes that land at the same time, and sets their respective primary/secondary status based on whether they have a pair.
+ * Calls {@link drawAll()} at the end.
+ */
 function checkPairs(){
     for (let i = 0; i < flyingNotes.length; i++) {
         if (flyingNotes[i] && flyingNotes[i].tail == false) {
@@ -431,6 +529,14 @@ function checkPairs(){
     drawAll();
 }
 
+/**
+ * Deselects currently selected  notes.
+ * Constructs then adds a note to {@link flyingNotes}. If `alt` is held when this is called, also adds an effect on the tile.
+ * Also adds appropriate information to {@link backLights}.
+ * Calls {@link checkPairs()}.
+ * TODO: objectify flying notes.
+ * @param {Note} note the note to add
+ */
 function addNote(note){
     if (note)
     {
@@ -498,7 +604,9 @@ function addNote(note){
     }
 }
 
-
+/**
+ * Redraws all notes, LN bodies and effects. Fires backlights and explosions as needed.
+ */
 function drawAll(){
     if (cId){
         redrawCanvas();
@@ -535,6 +643,11 @@ function drawAll(){
     }
 }
 
+/**
+ * Calculates where a note should be and draws it at the calculated position. If it's selected, a box is also drawn around the note.
+ * Whether an explosion should be fired under the note is also calculated.
+ * @param {*} note 
+ */
 function drawNote(note){
     let timeUntilLand = audio.currentTime - note.time;
     let x = note.target.x;
@@ -672,6 +785,10 @@ function drawNote(note){
     return {"x":x,"y":y}
 }
 
+/**
+ * Constructs then adds an effect to {@link flyingEffects} for each selected tile, then calls {@link drawAll()}.
+ * TODO: objectify effects.
+ */
 function renderEffects(effect){
     if (effect == 0 || effect == 1){
         if (eRolling){
@@ -724,6 +841,9 @@ function renderEffects(effect){
     drawAll();
 }
 
+/**
+ * Sets all effect images' opacity to 0 (fully transparent).
+ */
 function resetEffects(){
     for (let i = 0; i < 3; i++){
         for (let j = 0; j < 5;j++){
@@ -733,6 +853,13 @@ function resetEffects(){
     }
 }
 
+/**
+ * Creates a long note (LN) from two notes if they land on the same cell from the same direction.
+ * Creation includes changing the LN's head (first of the two notes to land) and tail to their respective alternate forms
+ * and creating the LN body.
+ * TODO: modular head and tail draw commands
+ * @param {boolean} pass whether to skip validation
+ */
 function makeLongNote(pass){
     if (pass || selectedNotes.length == 2){
         let firstNote = flyingNotes[selectedNotes[0]];
@@ -861,6 +988,9 @@ function makeLongNote(pass){
     }
 }
 
+/**
+ * Changes LN bodies' target coordinates so they are draw properly aligned.
+ */
 function realignLNBodies(){
     for (const c of canvasObjects) {
         if (c) {
@@ -883,6 +1013,12 @@ function realignLNBodies(){
     }
 }
 
+/**
+ * Constructs an LN's body, then adds it to {@link canvasObjects}.
+ * @param {*} head first flying note
+ * @param {*} tail second flying note
+ * Calls {@link checkPairs()}.
+ */
 function tileLNBody(head, tail){
     var tilingLength = `${tail.time - head.time}`;
     switch (head.direction) {
@@ -946,6 +1082,10 @@ function tileLNBody(head, tail){
     checkPairs();
 }
 
+/**
+ * Sets an effect's opacity based on the current position of the audio.
+ * @param {*} effect the flying effect to update
+ */
 function updateEffect(effect){ 
     let timeUntilFire =  audio.currentTime - effect.time;
     let inds = effect.target.split("");
@@ -962,6 +1102,9 @@ function updateEffect(effect){
     }
 }
 
+/**
+ * Redraws LN bodies and tile numbering. this is misleading af lmao
+ */
 function redrawCanvas(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     if (cnvC){
@@ -1087,7 +1230,7 @@ function redrawCanvas(){
                         break;
                     
                     default:
-                        console.log("direction machine broke")
+                        console.log("direction machine broke (redrawCanvas)")
                         break;
                 }
             }
@@ -1118,6 +1261,9 @@ function redrawCanvas(){
     }
 }
 
+/**
+ * Fires all explosions that are need to be fired.
+ */
 function fireAllExplosions(){
     let i = gridDimensions.rows;
     while (i--){
@@ -1131,6 +1277,10 @@ function fireAllExplosions(){
     }
 }
 
+/**
+ * Fires an explosion on a cell.
+ * @param {*} cell the selected cell to fire the explosion on
+ */
 function fireExplosion(cell){
     // I don't trust this
     // let iter = 0;
@@ -1163,6 +1313,9 @@ function fireExplosion(cell){
     }, 33);
 }
 
+/**
+ * Lights up backlights if the current time falls near said backlights' firing time.
+ */
 function checkBackLights(){
     for (const r of backLights) {
         for (const c of r) {
@@ -1194,6 +1347,9 @@ function stopAnim(){
     cancelAnimationFrame(animationId);
 }
 
+/**
+ * Reverts a note to its default form. If it has a tail note associated with it, it's also reverted.
+ */
 function revertNote(note){
     if (note){
         switch (note.direction){
@@ -1271,7 +1427,9 @@ function revertNote(note){
     }
 }
 
-
+/**
+ * Removes backlight firing times that no longer have a matching note.
+ */
 function cleanupBacklights(){
     for (const u of backLights) {
         let toRevert = [];
@@ -1316,7 +1474,7 @@ function selectAllNotes(){
     drawAll();
 }
 /**
- * Selects all effects.
+ * Selects all tiles.
  */
 function selectAllEffects(){
     for (let i = 0; i < 3; i++){
@@ -1326,10 +1484,11 @@ function selectAllEffects(){
     }
 }
 
-
 /**
- * TODO:
- * @param {*} note 
+ * Deselects notes if `ctrl` isn't pressed.
+ * If the note is not already in {@link selectedNotes}, adds its id to the collection. 
+ * Calls {@link drawAll()}.
+ * @param {*} note the note to add to the collection of selected notes
  */
 function setSelectedNotes(note){
     if (!ctrlPressed){
@@ -1350,8 +1509,10 @@ function setSelectedNotes(note){
     }
 }
 /**
- * TODO:
- * @param {*} cell 
+ * Deselects effects if `ctrl` isn't pressed.
+ * If the effect is not already in {@link selectedEffects}, adds its id to the collection. 
+ * Calls {@link drawAll()}.
+ * @param {*} cell the effect to add to the collection of selected effects
  */
 function setSelectedEffects(cell){
     if (!ctrlPressed){
@@ -1412,6 +1573,9 @@ function deselectEffects(){
 
 //#region DELETIONS ########################################################################
 
+/**
+ * Deletes all notes or effects, depending on the mode the editor is currently in.
+ */
 function deleteSelectedForMode(){
     if (noteMode){
         deleteSelectedNotes();
@@ -1421,6 +1585,9 @@ function deleteSelectedForMode(){
     }
 }
 
+/**
+ * Deletes all selected notes and does cleanup where needed.
+ */
 function deleteSelectedNotes(){
     for (let s of selectedNotes){
         for (let n of flyingNotes){
@@ -1446,6 +1613,9 @@ function deleteSelectedNotes(){
     //drawAll();
 }
 
+/**
+ * Deletes selected effects and does cleanup where needed.
+ */
 function deleteSelectedEffects(){
     var indsToRevert =  [];
     for (let i = 0; i < eId; i++){
@@ -1487,23 +1657,23 @@ function deleteSelectedEffects(){
 //#region SHOWCASE ########################################################################
 
 /**
- * TODO:
+ * Enters showcase mode, which hides controls and makes notes fade out completely.
  */
 function showcase(){
     if (audio.duration != NaN){
         audio.pause();
-        topControlsElement.style.display = "none";
+        sideControlsElement.style.display = "none";
         inactiveOpacity = 0;
         playPauseAudio();
     }
 }
 
 /**
- * TODO:
+ * Stops showcase mode, revealing the controls and going to the beginning of the audio.
  */
 function stopShowcase(){
     if (audio.duration != NaN){
-        topControlsElement.style.display = "";
+        sideControlsElement.style.display = "";
         inactiveOpacity = 0.1;
         stopAudio();
     }
@@ -1517,10 +1687,10 @@ function stopShowcase(){
  * Toggles the display of the editor UI.
  */
 function toggleUI(){
-    if (topControlsElement.style.display == "none"){
-        topControlsElement.style.display = "";
+    if (sideControlsElement.style.display == "none"){
+        sideControlsElement.style.display = "";
     } else {
-        topControlsElement.style.display = "none";
+        sideControlsElement.style.display = "none";
     }
 }
 

@@ -16,7 +16,7 @@
  */
 var currDirection = 2;
 /**
- * The direction newly placed effects will travel.
+ * The orientation of newly placed effects.
  * @type {number}
  */
 var eDir = 2;
@@ -69,7 +69,7 @@ var chartFile = new Chart(chartMetadata, chartHead, chartNotes, chartEffects);
 //#region CHART LOADING ########################################################################
 
 /**
- * Loads the chart provided via the parameter into the editor.
+ * Loads the chart provided via the parameter into the editor and sets the editor's input fields.
  * @param {Chart} data The chart to be loaded.
  */
 function chartLoading(data){
@@ -249,8 +249,9 @@ function setMode() {
 }
 
 /**
- * Deletes rendering objects for notes that are no longer on the grid, because it's size has been changed.
+ * Deletes rendering objects for notes that are no longer on the grid after its size has changed.
  * TODO: imo, changing the grid size should completely clear the chart.
+ *              and in my opinion the mode change button has no warning.
  */
 function removeFallenNotes(){
     for (let i = 0; i < flyingNotes.length; i++) {
@@ -266,7 +267,7 @@ function removeFallenNotes(){
 }
 
 /**
- * Deletes rendering objects for effects that are no longer on the grid, because it's size has been changed.
+ * Deletes rendering objects for effects that are no longer on the grid after its size has changed.
  */
 function removeFallenEffects(){
     noteMode = false;
@@ -331,7 +332,7 @@ function setGenre(){
 }
 
 /**
- * Sets the song's scale in the edited metadata. (callback)
+ * Sets the song's scale (difficulty) in the edited metadata. (callback)
  */
 function setScale(){
     chartMetadata.scale = document.getElementById("setScale").value;
@@ -467,6 +468,10 @@ function constructChartFile(){
  * @type {number}
  */
 var rotIter = 1;
+
+/**
+ * Changes the direction newly created notes are placed on.
+ */
 function changeDirection(){
     let deg = 90 * rotIter;
 
@@ -483,6 +488,10 @@ function changeDirection(){
  * @type {number}
  */
 var eIter = 0;
+
+/**
+ * Changes the orientation of newly created effects.
+ */
 function changeEffectDirection(){
     let a = [2,3,6];
     eIter++;
